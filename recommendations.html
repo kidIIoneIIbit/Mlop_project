@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recommendations — PetNutrition AI</title>
+    <link rel="stylesheet" href="css/pet-style.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <a href="pet-index.html" class="brand">
+            <div class="brand-icon">🐾</div>
+            <div class="brand-text">
+                <div class="name">PetNutrition AI</div>
+                <div class="sub">Powered by ML</div>
+            </div>
+        </a>
+        <nav class="nav-links">
+            <a class="nav-link" href="pet-index.html">Home</a>
+            <a class="nav-link" href="profile.html">Edit Profile</a>
+            <a class="nav-link active">Recommendations</a>
+        </nav>
+        <a href="profile.html" class="btn btn-outline">✏️ Edit Profile</a>
+    </header>
+
+    <div style="min-height:calc(100vh - 64px);padding:40px 24px;">
+        <div class="container">
+
+            <!-- Header -->
+            <div id="rec-header" style="margin-bottom:28px;"></div>
+
+            <!-- Adaptive banner (shown after ≥2 clicks) -->
+            <div id="adaptive-banner" style="display:none;"></div>
+
+            <!-- Model info strip -->
+            <div
+                style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="badge badge-purple">🤖 Model v<span id="model-version">1</span></span>
+                    <span style="font-size:13px;color:var(--text-3);">Ranked by relevance score</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-ghost btn-sm" onclick="refreshRecs()" id="refresh-btn">🔄 Refresh</button>
+                    <button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">✏️ Edit
+                        Profile</button>
+                </div>
+            </div>
+
+            <!-- Recommendation grid -->
+            <div class="rec-grid" id="rec-grid"></div>
+
+            <!-- Empty state -->
+            <div id="empty-state" class="empty" style="display:none;">
+                <div class="empty-icon">🐾</div>
+                <h3>No matching products found</h3>
+                <p>Try adjusting your pet profile for better results.</p>
+                <a href="profile.html" class="btn btn-primary" style="margin-top:16px;">← Edit Profile</a>
+            </div>
+
+            <!-- Click history summary -->
+            <div id="interest-summary" style="display:none;margin-top:40px;">
+                <div class="divider"></div>
+                <div style="text-align:center;padding:20px 0;">
+                    <div style="font-size:13px;color:var(--text-3);margin-bottom:8px;">YOUR INTEREST LOG</div>
+                    <div id="interest-log-display" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+                    </div>
+                    <button class="btn btn-ghost btn-sm" style="margin-top:14px;" onclick="clearInterests()">Clear My
+                        Interests</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pet-data.js"></script>
+    <script src="js/pet-app.js"></script>
+    <script>
+        let profile = null;
+        let clickLog = [];
+        let likedIds = new Set();
+
+        function loadAndRender() {
+            profile = STORAGE.getProfile();
+            clickLog = STORAGE.getClickLog();
+
+            if (!profile) {
+                document.getElementById('rec-header').innerHTML = `
+          <div class="adaptive-banner">
+            <div class="banner-icon">⚠️</div>
+            <div class="banner-text">
+              <strong>No pet profile found</strong>
+              <p>Please create a profile first to get recommendations.</p>
+            </div>
+            <a href="profile.html" class="btn btn-primary">Create Profile →</a>
+          </div>`;
+                return;
+            }
+
+            renderHeader();
+            renderAdaptiveBanner();
+            renderRecommendations();
+            renderInterestLog();
+        }
+
+        function renderHeader() {
+            const speciesEmoji = profile.species === 'dog' ? '🐕' : '🐱';
+            const ageLabel = profile.age < 1 ? `${Math.round(profile.age * 12)} months` : `${profile.age} yrs`;
+            document.getElementById('rec-header').innerHTML = `
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="font-size:48px;">${speciesEmoji}</div>
+          <div>
+            <h1 style="font-size:26px;font-weight:900;margin-bottom:4px;">
+              Top Picks for <span style="background:linear-gradient(135deg,var(--accent-light),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${profile.name}</span> 🐾
+            </h1>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+              <span class="badge badge-purple">${profile.breed}</span>
+              <span class="badge badge-orange">${ageLabel}</span>
+              <span class="badge badge-teal">${profile.weight} kg</span>
+              ${profile.conditions.filter(c => c !== 'None').map(c => `<span class="badge badge-pink">🏥 ${c}</span>`).join('')}
+              ${profile.goals.map(g => `<span class="badge badge-yellow">🎯 ${g}</span>`).join('')}
+            </div>
+          </div>
+        </div>`;
+        }
+
+        function renderAdaptiveBanner() {
+            const banner = document.getElementById('adaptive-banner');
+            const mv = document.getElementById('model-version');
+            if (clickLog.length >= 2) {
+                banner.style.display = '';
+                banner.innerHTML = `
+          <div class="adaptive-banner" style="margin-bottom:20px;">
+            <div class="banner-icon">🔄</div>
+            <div class="banner-text">
+              <strong>Recommendations updated based on your interests!</strong>
+              <p>You've expressed interest in ${clickLog.length} product(s). Your recommendations now reflect your preferences.</p>
+            </div>
+            <span class="badge badge-teal">Adaptive · V2</span>
+          </div>`;
+                mv.textContent = '2';
+            } else {
+                banner.style.display = 'none';
+                mv.textContent = '1';
+            }
+        }
+
+        function renderRecommendations() {
+            const recs = getRecommendations(profile, clickLog);
+            const grid = document.getElementById('rec-grid');
+            const empty = document.getElementById('empty-state');
+
+            if (recs.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = '';
+                return;
+            }
+            empty.style.display = 'none';
+
+            const scoreColors = [
+                'linear-gradient(90deg,#fdcb6e,#e17055)',
+                'linear-gradient(90deg,#b2bec3,#636e72)',
+                'linear-gradient(90deg,#fd9644,#c67a30)',
+                'linear-gradient(90deg,#7b6ff0,#5a50c8)',
+                'linear-gradient(90deg,#00c9a7,#00a082)'
+            ];
+
+            grid.innerHTML = recs.map((p, i) => {
+                const rankNum = i + 1;
+                const reason = generateReason(p, profile);
+                const isLiked = likedIds.has(p.id);
+                return `
+          <div class="rec-card fade-in" id="card-${p.id}" style="animation-delay:${i * 0.1}s;">
+            <div class="rank-badge rank-${rankNum}">${rankNum === 1 ? '🥇' : rankNum === 2 ? '🥈' : rankNum === 3 ? '🥉' : rankNum}</div>
+            <div class="product-img" style="font-size:72px;cursor:pointer;" onclick="viewDetail('${p.id}')">
+              ${p.emoji}
+            </div>
+            <div class="card-body">
+              <div class="product-brand">${p.brand}</div>
+              <div class="product-name">${p.name}</div>
+              <div class="score-wrap">
+                <div class="score-header">
+                  <span class="score-label">Relevance Score</span>
+                  <span class="score-val">${p.score}/100</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-fill" data-target="${p.score}" style="background:${scoreColors[i]};width:0;"></div>
+                </div>
+              </div>
+              <div class="rec-reason">
+                <span class="reason-icon">💡</span>${reason}
+              </div>
+              <div class="rec-tags">
+                ${p.diseaseSupport.map(d => `<span class="rec-tag rec-tag-teal">${d}</span>`).join('')}
+                ${p.tags.slice(0, 2).map(t => `<span class="rec-tag rec-tag-purple">${t}</span>`).join('')}
+                <span class="rec-tag rec-tag-orange">฿${p.price.toLocaleString()} / ${p.unit}</span>
+              </div>
+              <div class="card-actions">
+                <button class="btn btn-like ${isLiked ? 'liked' : ''}" id="like-${p.id}" onclick="markInterested('${p.id}','${p.name.replace(/'/g, '\\'')}')">
+                  ${ isLiked ? '❤️ Interested' : '🤍 Interested' }
+                </button >
+                    <button class="btn btn-outline" onclick="viewDetail('${p.id}')">
+                        🔍 View Details
+                    </button>
+              </div >
+            </div >
+          </div > `;
+      }).join('');
+
+      setTimeout(animateScoreBars, 200);
+    }
+
+    function markInterested(productId, productName) {
+      if (likedIds.has(productId)) return; // already liked
+
+      likedIds.add(productId);
+      STORAGE.addClick(productId, productName);
+      clickLog = STORAGE.getClickLog();
+
+      const btn = document.getElementById('like-' + productId);
+      if (btn) { btn.textContent = '❤️ Interested'; btn.classList.add('liked'); }
+
+      showToast('Saved! ❤️', 'Your preferences help improve recommendations.', 'love');
+
+      // After 2 clicks → adaptive update
+      if (clickLog.length >= 2 && clickLog.length <= 3) {
+        setTimeout(() => {
+          showToast('🔄 Adaptive Update', 'Refreshing recommendations based on your interests...', 'paw', 4000);
+          setTimeout(() => {
+            renderAdaptiveBanner();
+            renderRecommendations();
+            renderInterestLog();
+          }, 1500);
+        }, 500);
+      } else {
+        renderInterestLog();
+      }
+    }
+
+    function renderInterestLog() {
+      const summary = document.getElementById('interest-summary');
+      const logDisplay = document.getElementById('interest-log-display');
+      if (clickLog.length === 0) { summary.style.display = 'none'; return; }
+      summary.style.display = '';
+      logDisplay.innerHTML = clickLog.map(c => {
+        const p = PRODUCTS.find(x => x.id === c.productId);
+        return `< span class="badge badge-purple" > ${ p ? p.emoji : '🐾' } ${ c.productName }</span >`;
+      }).join('');
+    }
+
+    function clearInterests() {
+      likedIds.clear();
+      localStorage.removeItem('clickLog');
+      clickLog = [];
+      showToast('Cleared', 'Interest log reset. Recommendations refreshed.', 'info');
+      renderAdaptiveBanner();
+      renderRecommendations();
+      renderInterestLog();
+    }
+
+    function refreshRecs() {
+      const btn = document.getElementById('refresh-btn');
+      btn.textContent = '⏳ Refreshing...';
+      btn.disabled = true;
+      setTimeout(() => {
+        renderRecommendations();
+        btn.textContent = '🔄 Refresh';
+        btn.disabled = false;
+        showToast('Refreshed', 'Recommendations updated!', 'success');
+      }, 600);
+    }
+
+    function viewDetail(productId) {
+      localStorage.setItem('viewingProduct', productId);
+      window.location.href = 'product.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAndRender);
+    </script>
+</body>
+
+</html>

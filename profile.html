@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Pet Profile — PetNutrition AI</title>
+    <link rel="stylesheet" href="css/pet-style.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <a href="pet-index.html" class="brand">
+            <div class="brand-icon">🐾</div>
+            <div class="brand-text">
+                <div class="name">PetNutrition AI</div>
+                <div class="sub">Powered by ML</div>
+            </div>
+        </a>
+        <nav class="nav-links">
+            <a class="nav-link" href="pet-index.html">Home</a>
+            <a class="nav-link active">Get Recommendation</a>
+            <a class="nav-link" href="presentation.html">📊 Presentation</a>
+        </nav>
+        <div style="width:160px;"></div>
+    </header>
+
+    <div class="form-page">
+        <div class="container-sm">
+
+            <!-- Steps indicator -->
+            <div class="steps" style="margin-bottom:32px;">
+                <div class="step active" id="step1-ind">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Pet Info</div>
+                </div>
+                <div class="step-line" id="line1"></div>
+                <div class="step" id="step2-ind">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Health</div>
+                </div>
+                <div class="step-line" id="line2"></div>
+                <div class="step" id="step3-ind">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Goals</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Pet Info -->
+            <div id="step1" class="form-card fade-in">
+                <div style="text-align:center;margin-bottom:24px;">
+                    <div style="font-size:40px;margin-bottom:8px;">📋</div>
+                    <h2 class="form-title">Tell Us About Your Pet</h2>
+                    <p class="form-subtitle">Basic information helps us understand your pet's needs.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pet Type <span class="req">*</span></label>
+                    <div class="pet-type-grid">
+                        <div class="pet-type-btn active" id="btn-dog" onclick="selectSpecies('dog')">
+                            <div class="pet-emoji">🐕</div>
+                            <div class="pet-name">Dog</div>
+                            <div class="pet-sub">20 breeds</div>
+                        </div>
+                        <div class="pet-type-btn" id="btn-cat" onclick="selectSpecies('cat')">
+                            <div class="pet-emoji">🐱</div>
+                            <div class="pet-name">Cat</div>
+                            <div class="pet-sub">15 breeds</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pet Name <span class="req">*</span></label>
+                    <input type="text" id="pet-name" class="form-input" placeholder="e.g. Mochi, Brownie, Luna..." />
+                    <div class="form-hint">This personalizes your recommendation page.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Breed <span class="req">*</span></label>
+                    <select id="breed-select" class="form-select"></select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Age (years) <span class="req">*</span></label>
+                        <input type="number" id="pet-age" class="form-input" placeholder="e.g. 3" min="0" max="25"
+                            step="0.5" />
+                        <div class="form-hint">0.5 = 6 months old</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Weight (kg) <span class="req">*</span></label>
+                        <input type="number" id="pet-weight" class="form-input" placeholder="e.g. 12.5" min="0.5"
+                            max="100" step="0.1" />
+                    </div>
+                </div>
+
+                <div style="text-align:right;margin-top:28px;">
+                    <button class="btn btn-primary btn-lg" onclick="goStep2()">
+                        Next: Health Conditions →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Health conditions -->
+            <div id="step2" class="form-card fade-in" style="display:none;">
+                <div style="text-align:center;margin-bottom:28px;">
+                    <div style="font-size:40px;margin-bottom:8px;">🏥</div>
+                    <h2 class="form-title">Health Conditions</h2>
+                    <p class="form-subtitle">Select all that apply — most important factor in recommendations.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Existing Conditions</label>
+                    <div class="tag-grid" style="margin-top:8px;">
+                        <div class="tag-btn active" id="cond-none" data-cond="None" onclick="toggleCondition('None')">✅
+                            None / Healthy</div>
+                        <div class="tag-btn" id="cond-kidney" data-cond="Kidney" onclick="toggleCondition('Kidney')">🫘
+                            Kidney Disease</div>
+                        <div class="tag-btn" id="cond-obesity" data-cond="Obesity" onclick="toggleCondition('Obesity')">
+                            ⚖️ Obesity</div>
+                        <div class="tag-btn" id="cond-allergy" data-cond="Allergy" onclick="toggleCondition('Allergy')">
+                            🤧 Food Allergy</div>
+                        <div class="tag-btn" id="cond-digestive" data-cond="Digestive"
+                            onclick="toggleCondition('Digestive')">🧫 Digestive Issues</div>
+                    </div>
+                    <div class="form-hint" style="margin-top:10px;">💡 Tap "None / Healthy" if no known conditions.
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Current Food Brand (optional)</label>
+                    <select class="form-select" id="current-brand">
+                        <option value="">Not sure / None</option>
+                        <option>Royal Canin</option>
+                        <option>Hill's Science Diet</option>
+                        <option>Purina</option>
+                        <option>Orijen</option>
+                        <option>Acana</option>
+                        <option>Local brand</option>
+                        <option>Home-cooked</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;margin-top:28px;">
+                    <button class="btn btn-ghost btn-lg" onclick="goStep1()">← Back</button>
+                    <button class="btn btn-primary btn-lg" onclick="goStep3()">Next: Goals →</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Goals -->
+            <div id="step3" class="form-card fade-in" style="display:none;">
+                <div style="text-align:center;margin-bottom:28px;">
+                    <div style="font-size:40px;margin-bottom:8px;">🎯</div>
+                    <h2 class="form-title">Nutrition Goals</h2>
+                    <p class="form-subtitle">What do you want to achieve with your pet's new diet?</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Primary Goals (select all that apply)</label>
+                    <div class="tag-grid" style="margin-top:8px;">
+                        <div class="tag-btn" id="goal-weight" data-goal="Weight Loss"
+                            onclick="toggleGoal('Weight Loss')">📉 Weight Loss</div>
+                        <div class="tag-btn" id="goal-senior" data-goal="Senior Care"
+                            onclick="toggleGoal('Senior Care')">👴 Senior Care</div>
+                        <div class="tag-btn" id="goal-active" data-goal="Active Lifestyle"
+                            onclick="toggleGoal('Active Lifestyle')">⚡ Active Lifestyle</div>
+                        <div class="tag-btn" id="goal-wellness" data-goal="General Wellness"
+                            onclick="toggleGoal('General Wellness')">💚 General Wellness</div>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div
+                    style="background:rgba(123,111,240,0.06);border:1px solid rgba(123,111,240,0.2);border-radius:var(--radius);padding:20px;margin-top:24px;">
+                    <div
+                        style="font-size:13px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">
+                        📋 Your Pet Summary</div>
+                    <div id="preview-content" style="line-height:2;font-size:15px;"></div>
+                </div>
+
+                <div style="margin-top:32px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <button class="btn btn-ghost" onclick="goStep2()">← Back</button>
+                        <button class="btn btn-teal btn-lg" onclick="generateRecs()">
+                            <span style="font-size:20px;">🔍</span> Generate Recommendation
+                        </button>
+                    </div>
+                    <p style="text-align:center;font-size:12px;color:var(--text-3);">No account needed · Results in
+                        under 1 second</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pet-data.js"></script>
+    <script src="js/pet-app.js"></script>
+    <script>
+        // ─── State ────────────────────────────────────────
+        let currentSpecies = 'dog';
+        // Conditions: set for tracking selected conditions
+        const selectedConditions = new Set(['None']);
+        const selectedGoals = new Set();
+
+        // ─── Species selector ─────────────────────────────
+        function selectSpecies(species) {
+            currentSpecies = species;
+            document.getElementById('btn-dog').classList.toggle('active', species === 'dog');
+            document.getElementById('btn-cat').classList.toggle('active', species === 'cat');
+            repopulateBreeds(species);
+        }
+
+        function repopulateBreeds(species) {
+            const sel = document.getElementById('breed-select');
+            sel.innerHTML = BREEDS[species].map(b => `<option>${b}</option>`).join('');
+        }
+
+        // ─── Condition toggle ─────────────────────────────
+        function toggleCondition(val) {
+            if (val === 'None') {
+                // Select only None, clear others
+                selectedConditions.clear();
+                selectedConditions.add('None');
+            } else {
+                // Remove None, toggle this condition
+                selectedConditions.delete('None');
+                if (selectedConditions.has(val)) {
+                    selectedConditions.delete(val);
+                } else {
+                    selectedConditions.add(val);
+                }
+                // If nothing selected, fall back to None
+                if (selectedConditions.size === 0) {
+                    selectedConditions.add('None');
+                }
+            }
+            refreshConditionUI();
+        }
+
+        function refreshConditionUI() {
+            ['none', 'kidney', 'obesity', 'allergy', 'digestive'].forEach(id => {
+                const el = document.getElementById('cond-' + id);
+                if (!el) return;
+                const val = el.dataset.cond;
+                el.classList.toggle('active', selectedConditions.has(val));
+            });
+        }
+
+        // ─── Goal toggle ──────────────────────────────────
+        function toggleGoal(val) {
+            if (selectedGoals.has(val)) {
+                selectedGoals.delete(val);
+            } else {
+                selectedGoals.add(val);
+            }
+            refreshGoalUI();
+            updatePreview();
+        }
+
+        function refreshGoalUI() {
+            ['weight', 'senior', 'active', 'wellness'].forEach(id => {
+                const el = document.getElementById('goal-' + id);
+                if (!el) return;
+                const val = el.dataset.goal;
+                el.classList.toggle('active', selectedGoals.has(val));
+            });
+        }
+
+        // ─── Step navigation ──────────────────────────────
+        function setStepIndicator(active, done) {
+            // done = array of step numbers done, active = current step number
+            [1, 2, 3].forEach(n => {
+                const el = document.getElementById(`step${n}-ind`);
+                el.classList.remove('active', 'done');
+                if (done.includes(n)) el.classList.add('done');
+                if (n === active) el.classList.add('active');
+            });
+        }
+
+        function goStep1() {
+            document.getElementById('step1').style.display = '';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'none';
+            setStepIndicator(1, []);
+        }
+
+        function goStep2() {
+            const name = document.getElementById('pet-name').value.trim();
+            const age = parseFloat(document.getElementById('pet-age').value);
+            const weight = parseFloat(document.getElementById('pet-weight').value);
+            if (!name) { showToast('Name required', "Please enter your pet's name", 'warning'); return; }
+            if (isNaN(age) || age < 0) { showToast('Age required', 'Please enter a valid age', 'warning'); return; }
+            if (isNaN(weight) || weight <= 0) { showToast('Weight required', 'Please enter a valid weight', 'warning'); return; }
+
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = '';
+            document.getElementById('step3').style.display = 'none';
+            setStepIndicator(2, [1]);
+            refreshConditionUI();
+        }
+
+        function goStep3() {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = '';
+            setStepIndicator(3, [1, 2]);
+            refreshGoalUI();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const name = document.getElementById('pet-name').value || '(no name)';
+            const age = document.getElementById('pet-age').value || '?';
+            const weight = document.getElementById('pet-weight').value || '?';
+            const breed = document.getElementById('breed-select').value || '?';
+            const conds = [...selectedConditions].join(', ') || 'None';
+            const goals = [...selectedGoals].join(', ') || '(none selected)';
+            document.getElementById('preview-content').innerHTML = `
+        <div>🐾 <b>${name}</b> — ${currentSpecies === 'dog' ? '🐕 Dog' : '🐱 Cat'}</div>
+        <div>🧬 Breed: <b>${breed}</b></div>
+        <div>🎂 Age: <b>${age} yrs</b> · ⚖️ Weight: <b>${weight} kg</b></div>
+        <div>🏥 Conditions: <b>${conds}</b></div>
+        <div>🎯 Goals: <b>${goals}</b></div>`;
+        }
+
+        function generateRecs() {
+            const name = document.getElementById('pet-name').value.trim();
+            const age = parseFloat(document.getElementById('pet-age').value);
+            const weight = parseFloat(document.getElementById('pet-weight').value);
+            const breed = document.getElementById('breed-select').value;
+            const conditions = [...selectedConditions];
+            const goals = selectedGoals.size > 0 ? [...selectedGoals] : ['General Wellness'];
+
+            const profile = {
+                name, species: currentSpecies, breed, age, weight,
+                conditions, goals,
+                timestamp: new Date().toISOString()
+            };
+
+            STORAGE.saveProfile(profile);
+            showToast('Profile Saved! 🐾', `Generating recommendations for ${name}...`, 'paw');
+            setTimeout(() => { window.location.href = 'recommendations.html'; }, 700);
+        }
+
+        // ─── Init ─────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            repopulateBreeds('dog');
+        });
+    </script>
+</body>
+
+</html>

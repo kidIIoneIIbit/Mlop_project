@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PetNutrition AI — Personalized Nutrition for Your Pet</title>
+    <meta name="description"
+        content="AI-powered pet food recommendations personalized to your pet's breed, age, weight, and health conditions. Get started in 60 seconds." />
+    <link rel="stylesheet" href="css/pet-style.css" />
+    <style>
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            padding: 0 0 80px;
+        }
+
+        .how-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            text-align: center;
+            transition: var(--t-slow);
+        }
+
+        .how-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(123, 111, 240, 0.4);
+        }
+
+        .how-num {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+            margin: 0 auto 14px;
+        }
+
+        .how-card h3 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .how-card p {
+            font-size: 13px;
+            color: var(--text-2);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, rgba(123, 111, 240, 0.1), rgba(253, 150, 68, 0.08));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 60px 40px;
+            text-align: center;
+            margin: 0 0 80px;
+        }
+
+        .cta-section h2 {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            font-size: 17px;
+            color: var(--text-2);
+            margin-bottom: 32px;
+        }
+
+        .floating-pets {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .fp {
+            position: absolute;
+            font-size: 28px;
+            opacity: 0.08;
+            animation: fp-spin linear infinite;
+        }
+
+        @keyframes fp-spin {
+            from {
+                transform: rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+
+            to {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">🐾</div>
+            <div class="brand-text">
+                <div class="name">PetNutrition AI</div>
+                <div class="sub">Powered by ML</div>
+            </div>
+        </div>
+        <nav class="nav-links">
+            <a class="nav-link active" data-page="home" onclick="return false;">Home</a>
+            <a class="nav-link" href="profile.html">Get Recommendation</a>
+            <a class="nav-link" href="admin.html">Admin Demo</a>
+        </nav>
+        <a href="profile.html" class="btn btn-primary">
+            <span class="emoji">🐾</span> Start Recommendation
+        </a>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="floating-pets">
+            <div class="fp" style="left:8%;top:20%;animation-duration:12s;">🐶</div>
+            <div class="fp" style="left:85%;top:15%;animation-duration:15s;">🐱</div>
+            <div class="fp" style="left:15%;top:70%;animation-duration:10s;">🦴</div>
+            <div class="fp" style="left:80%;top:65%;animation-duration:13s;">🐟</div>
+            <div class="fp" style="left:50%;top:10%;animation-duration:11s;">⭐</div>
+        </div>
+        <div class="hero-content fade-in">
+            <div class="hero-badge">🤖 AI-Powered Recommendations</div>
+            <div class="hero-logo">🐾</div>
+            <h1 class="hero-title">
+                <span class="g1">Pet Lifestyle</span><br>
+                &amp; <span class="g2">Nutrition</span> Recommender
+            </h1>
+            <p class="hero-subtitle">Personalized nutrition for your pet — tailored to breed, age, and health
+                conditions.</p>
+            <div class="hero-btns">
+                <a href="profile.html" class="btn btn-primary btn-lg">
+                    <span class="emoji">🐶</span> Start Recommendation
+                </a>
+                <a href="#how" class="btn btn-ghost btn-lg">
+                    🏪 For Pet Shops
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div>
+                    <div class="hero-stat-val" id="stat-prod">0</div>
+                    <div class="hero-stat-lbl">Products</div>
+                </div>
+                <div>
+                    <div class="hero-stat-val" id="stat-breeds">0</div>
+                    <div class="hero-stat-lbl">Breeds</div>
+                </div>
+                <div>
+                    <div class="hero-stat-val" id="stat-acc">0%</div>
+                    <div class="hero-stat-lbl">Precision@5</div>
+                </div>
+                <div>
+                    <div class="hero-stat-val" id="stat-time">0s</div>
+                    <div class="hero-stat-lbl">Avg Response</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="glow-line"></div>
+
+    <!-- Features -->
+    <section class="features" id="how">
+        <div class="container">
+            <h2 class="features-title">🧠 How It Works</h2>
+            <p class="features-sub">Three simple steps to perfect nutrition</p>
+            <div class="how-grid">
+                <div class="how-card fade-in">
+                    <div class="how-num">1</div>
+                    <div style="font-size:36px;margin-bottom:14px;">📋</div>
+                    <h3>Fill Pet Profile</h3>
+                    <p>Tell us your pet's species, breed, age, weight, and any health conditions.</p>
+                </div>
+                <div class="how-card fade-in" style="animation-delay:0.1s;">
+                    <div class="how-num">2</div>
+                    <div style="font-size:36px;margin-bottom:14px;">🤖</div>
+                    <h3>AI Analyzes</h3>
+                    <p>Our ML model scores all available products against your pet's specific needs.</p>
+                </div>
+                <div class="how-card fade-in" style="animation-delay:0.2s;">
+                    <div class="how-num">3</div>
+                    <div style="font-size:36px;margin-bottom:14px;">🥇</div>
+                    <h3>Get Top 5 Picks</h3>
+                    <p>Receive ranked recommendations with relevance scores and vet-approved reasons.</p>
+                </div>
+                <div class="how-card fade-in" style="animation-delay:0.3s;">
+                    <div class="how-num">4</div>
+                    <div style="font-size:36px;margin-bottom:14px;">🔄</div>
+                    <h3>Adaptive Learning</h3>
+                    <p>Your clicks improve future recommendations — the model learns your preferences!</p>
+                </div>
+            </div>
+
+            <!-- Feature cards -->
+            <div class="features-grid" style="margin-bottom:80px;">
+                <div class="feature-card fade-in">
+                    <div class="feature-emoji">🏥</div>
+                    <h3>Health-Condition Aware</h3>
+                    <p>Supports Kidney Disease, Obesity, Food Allergies, and Digestive disorders with vetted clinical
+                        formulas.</p>
+                </div>
+                <div class="feature-card fade-in" style="animation-delay:0.1s;">
+                    <div class="feature-emoji">⚖️</div>
+                    <h3>Weight Management</h3>
+                    <p>High-fiber, low-calorie formulas to help overweight pets reach their ideal body condition score.
+                    </p>
+                </div>
+                <div class="feature-card fade-in" style="animation-delay:0.2s;">
+                    <div class="feature-emoji">🧬</div>
+                    <h3>Breed-Specific Nutrition</h3>
+                    <p>Some breeds have predispositions to certain conditions — our model accounts for breed-specific
+                        risk factors.</p>
+                </div>
+                <div class="feature-card fade-in" style="animation-delay:0.3s;">
+                    <div class="feature-emoji">🔄</div>
+                    <h3>Adaptive Recommendations</h3>
+                    <p>Click "Interested" on products and watch your recommendations update in real-time based on your
+                        preferences.</p>
+                </div>
+                <div class="feature-card fade-in" style="animation-delay:0.4s;">
+                    <div class="feature-emoji">📊</div>
+                    <h3>Relevance Scoring</h3>
+                    <p>Each product gets a 0–100 relevance score with a clear explanation of why it's recommended for
+                        your pet.</p>
+                </div>
+                <div class="feature-card fade-in" style="animation-delay:0.5s;">
+                    <div class="feature-emoji">🛡️</div>
+                    <h3>Vet-Grade Products</h3>
+                    <p>All 20 products in our catalog are from trusted brands: Royal Canin, Hill's, Purina, Orijen, and
+                        Acana.</p>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-section">
+                <h2>Ready to find the perfect food? 🐾</h2>
+                <p>Takes less than 60 seconds. No account required.</p>
+                <a href="profile.html" class="btn btn-orange btn-lg">
+                    <span class="emoji">🐶</span> Start for Free
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer
+        style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;border-top:1px solid var(--border);">
+        🐾 PetNutrition AI · Built with ❤️ for pets everywhere · <a href="admin.html"
+            style="color:var(--text-3);">Admin</a>
+    </footer>
+
+    <script src="js/pet-data.js"></script>
+    <script src="js/pet-app.js"></script>
+    <script>
+        // Animated counters
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                animateCounter(document.getElementById('stat-prod'), 20);
+                animateCounter(document.getElementById('stat-breeds'), 35);
+                animateCounter(document.getElementById('stat-acc'), 82, 1400, '%');
+                animateCounter(document.getElementById('stat-time'), 0.8, 1000, 's');
+            }, 600);
+        });
+
+        // Reset session on visit landing
+        if (document.referrer === '' || document.referrer.includes('index')) {
+            // Don't clear — let existing profile persist
+        }
+    </script>
+</body>
+
+</html>
