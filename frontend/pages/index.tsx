@@ -47,7 +47,6 @@ export default function Home() {
           <div className="fp" style={{ left: '50%', top: '10%', animationDuration: '11s', fontSize: '40px', opacity: 0.12 }}>⭐</div>
         </div>
         <div className="hero-content fade-in">
-          <div className="hero-badge">🤖 AI-Powered Recommendations</div>
           <div className="hero-logo" style={{ fontSize: '120px', marginBottom: '20px' }}>🐾</div>
           <h1 className="hero-title">
             <span className="g1">Pet Lifestyle</span><br />
