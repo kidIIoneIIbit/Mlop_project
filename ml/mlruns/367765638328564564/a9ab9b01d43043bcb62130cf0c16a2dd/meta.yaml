@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/MLOP_PROJECT/ml/mlruns/367765638328564564/a9ab9b01d43043bcb62130cf0c16a2dd/artifacts
+end_time: 1772801945622
+entry_point_name: ''
+experiment_id: '367765638328564564'
+lifecycle_stage: active
+run_id: a9ab9b01d43043bcb62130cf0c16a2dd
+run_name: exp1_cbf_baseline
+run_uuid: a9ab9b01d43043bcb62130cf0c16a2dd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1772801945508
+status: 3
+tags: []
+user_id: USER

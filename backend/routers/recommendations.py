@@ -1,24 +1,27 @@
+# backend/routers/recommendations.py
+
 from fastapi import APIRouter
-from schemas import PetProfileRequest
-from services.model_service import RecommendationService
+from services.model_service import ModelService
 from datetime import datetime
 
 router = APIRouter()
 
-service = RecommendationService()
+model_service = ModelService()
 
 
 @router.post("/")
-def recommend(profile: PetProfileRequest):
+def recommend(payload: dict):
 
-    pet_dict = profile.dict()
+    pet_profile = payload
 
-    results = service.recommend(pet_dict, top_k=profile.top_k)
+    top_k = payload.get("top_k", 6)
+
+    results = model_service.recommend(pet_profile, top_k)
 
     return {
-        "pet_profile": pet_dict,
+        "pet_profile": pet_profile,
         "recommendations": results,
-        "model_used": "cbf_baseline",
-        "model_version": "v0.1",
-        "generated_at": datetime.utcnow().isoformat()
+        "model_used": "RecommendationModel",
+        "model_version": model_service.get_model_info().get("version"),
+        "generated_at": datetime.utcnow().isoformat(),
     }

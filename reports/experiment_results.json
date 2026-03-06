@@ -1,0 +1,14 @@
+{
+  "exp1_cbf_baseline": {
+    "params": {
+      "method": "cbf",
+      "k": 5
+    },
+    "metrics": {
+      "precision_at_5": 0.165,
+      "ndcg_at_5": 0.2731,
+      "training_time_s": 0.02
+    },
+    "run_id": "a9ab9b01d43043bcb62130cf0c16a2dd"
+  }
+}

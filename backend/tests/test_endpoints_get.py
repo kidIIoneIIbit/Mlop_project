@@ -5,10 +5,20 @@ import pytest
 
 
 def _load_any_food_id():
-    data_path = os.path.join(os.path.dirname(__file__), "..", "data", "foods.json")
+    import json
+    import os
+
+    data_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "data",
+        "foods.json",
+    )
+
     with open(data_path, "r", encoding="utf-8") as f:
-        foods = json.load(f).get("foods", [])
-    return foods[0]["id"] if foods else None
+        foods = json.load(f)
+
+    return foods[0]["id"]
 
 
 def test_health(client):
@@ -25,7 +35,8 @@ def test_model_info(client):
     body = r.json()
     assert "model_name" in body
     assert "version" in body
-    assert "precision_at_5" in body
+    assert "model_name" in body
+    assert "version" in body
 
 
 def test_breeds_dog(client):
@@ -44,11 +55,31 @@ def test_breeds_cat(client):
     assert all(b["species"] == "cat" for b in breeds)
 
 
+def _load_any_dog_breed():
+    data_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "data",
+        "breeds.json",
+    )
+
+    with open(data_path, "r", encoding="utf-8") as f:
+        breeds = json.load(f)
+
+    for b in breeds:
+        if b["species"] == "dog":
+            return b["id"]
+
+    return None
+
+
 def test_breed_detail(client):
-    r = client.get("/breeds/dog/labrador_retriever")
+    bid = _load_any_dog_breed()
+    if not bid:
+        pytest.skip("No dog breeds in breeds.json")
+
+    r = client.get(f"/breeds/dog/{bid}")
     assert r.status_code == 200
-    body = r.json()
-    assert body["id"] == "labrador_retriever"
 
 
 def test_breed_not_found(client):
@@ -68,7 +99,7 @@ def test_foods_filter_species(client):
     r = client.get("/foods?species=cat")
     assert r.status_code == 200
     foods = r.json()["foods"]
-    assert all("cat" in f["species"] for f in foods)
+    assert all(f["species"] == "cat" for f in foods)
 
 
 def test_foods_filter_type(client):

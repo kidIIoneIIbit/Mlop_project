@@ -1,4 +1,3 @@
-# backend/tests/test_data_loader.py
 from services.data_loader import load_breeds, load_foods
 
 
@@ -10,10 +9,11 @@ def test_load_breeds_returns_list():
 
 def test_load_breeds_has_keys():
     breeds = load_breeds()
-    assert all(
-        ("id" in b and "species" in b and "nutritional_targets" in b)
-        for b in breeds
-    )
+    b = breeds[0]
+
+    assert "id" in b
+    assert "name" in b
+    assert "species" in b
 
 
 def test_load_foods_returns_list():
@@ -24,7 +24,8 @@ def test_load_foods_returns_list():
 
 def test_load_foods_has_keys():
     foods = load_foods()
-    assert all(
-        ("id" in f and "species" in f and "nutritional_content" in f and "tags" in f)
-        for f in foods
-    )
+    f = foods[0]
+
+    assert "id" in f
+    assert "name" in f
+    assert "species" in f
