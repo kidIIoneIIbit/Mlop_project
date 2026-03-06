@@ -1,0 +1,700 @@
+{
+  "foods": [
+    {
+      "id": "purpose-brother-ago",
+      "name": "Face Election Formula",
+      "brand": "Taylor Inc",
+      "species": [
+        "dog"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 24,
+        "fat_pct": 15,
+        "fiber_pct": 8,
+        "calories_per_100g": 325
+      },
+      "tags": [
+        "joint",
+        "omega3",
+        "hairball"
+      ],
+      "certifications": [
+        "AAFCO"
+      ],
+      "badges": [
+        "Vet Approved",
+        "Premium"
+      ],
+      "price_usd": 31.64,
+      "avg_rating": 4.4
+    },
+    {
+      "id": "require-sit-wait",
+      "name": "Begin Performance Formula",
+      "brand": "Johnson-Davis",
+      "species": [
+        "dog"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 28,
+        "fat_pct": 14,
+        "fiber_pct": 2,
+        "calories_per_100g": 397
+      },
+      "tags": [
+        "joint",
+        "kidney",
+        "digestive"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Joint Support",
+        "Best Seller"
+      ],
+      "price_usd": 68.76,
+      "avg_rating": 4.7
+    },
+    {
+      "id": "early-mouth-play",
+      "name": "Option Decide Formula",
+      "brand": "Santos, Gardner and Robinson",
+      "species": [
+        "dog"
+      ],
+      "food_type": "wet",
+      "nutritional_content": {
+        "protein_pct": 37,
+        "fat_pct": 10,
+        "fiber_pct": 3,
+        "calories_per_100g": 355
+      },
+      "tags": [
+        "joint",
+        "hairball",
+        "omega3"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Vet Approved",
+        "Joint Support"
+      ],
+      "price_usd": 41.95,
+      "avg_rating": 3.9
+    },
+    {
+      "id": "perform-fall-table",
+      "name": "According Song Formula",
+      "brand": "Wolfe LLC",
+      "species": [
+        "dog"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 37,
+        "fat_pct": 16,
+        "fiber_pct": 8,
+        "calories_per_100g": 340
+      },
+      "tags": [
+        "joint",
+        "hairball",
+        "large-breed"
+      ],
+      "certifications": [
+        "AAFCO"
+      ],
+      "badges": [
+        "Vet Approved",
+        "Joint Support"
+      ],
+      "price_usd": 24.76,
+      "avg_rating": 4.8
+    },
+    {
+      "id": "fall-clearly-dinner",
+      "name": "Great Blue Formula",
+      "brand": "James LLC",
+      "species": [
+        "dog"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 34,
+        "fat_pct": 9,
+        "fiber_pct": 6,
+        "calories_per_100g": 448
+      },
+      "tags": [
+        "joint",
+        "hairball",
+        "large-breed"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Joint Support",
+        "Best Seller"
+      ],
+      "price_usd": 34.3,
+      "avg_rating": 4.7
+    },
+    {
+      "id": "throw-guy-pm",
+      "name": "Surface Animal Formula",
+      "brand": "Stevens, Martinez and Nielsen",
+      "species": [
+        "dog"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 29,
+        "fat_pct": 12,
+        "fiber_pct": 5,
+        "calories_per_100g": 376
+      },
+      "tags": [
+        "large-breed",
+        "digestive",
+        "joint"
+      ],
+      "certifications": [
+        "AAFCO"
+      ],
+      "badges": [
+        "Premium",
+        "Joint Support"
+      ],
+      "price_usd": 89.89,
+      "avg_rating": 5.0
+    },
+    {
+      "id": "bar-old-finally",
+      "name": "Production Present Formula",
+      "brand": "Ray-Bush",
+      "species": [
+        "dog"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 24,
+        "fat_pct": 16,
+        "fiber_pct": 3,
+        "calories_per_100g": 367
+      },
+      "tags": [
+        "digestive",
+        "large-breed",
+        "joint"
+      ],
+      "certifications": [
+        "AAFCO"
+      ],
+      "badges": [
+        "Joint Support",
+        "Best Seller"
+      ],
+      "price_usd": 31.04,
+      "avg_rating": 4.8
+    },
+    {
+      "id": "answer-recently",
+      "name": "Spring Figure Formula",
+      "brand": "Wyatt Inc",
+      "species": [
+        "dog"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 31,
+        "fat_pct": 17,
+        "fiber_pct": 8,
+        "calories_per_100g": 435
+      },
+      "tags": [
+        "joint",
+        "omega3",
+        "hairball"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Vet Approved",
+        "Premium"
+      ],
+      "price_usd": 38.51,
+      "avg_rating": 4.9
+    },
+    {
+      "id": "husband-fall-long",
+      "name": "They His Formula",
+      "brand": "Wood and Sons",
+      "species": [
+        "dog"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 26,
+        "fat_pct": 12,
+        "fiber_pct": 4,
+        "calories_per_100g": 353
+      },
+      "tags": [
+        "omega3",
+        "skin",
+        "large-breed"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Joint Support",
+        "Premium"
+      ],
+      "price_usd": 54.2,
+      "avg_rating": 4.9
+    },
+    {
+      "id": "religious-example",
+      "name": "Write Result Formula",
+      "brand": "Jones, Reid and Ferguson",
+      "species": [
+        "dog"
+      ],
+      "food_type": "wet",
+      "nutritional_content": {
+        "protein_pct": 23,
+        "fat_pct": 9,
+        "fiber_pct": 7,
+        "calories_per_100g": 370
+      },
+      "tags": [
+        "joint",
+        "large-breed",
+        "digestive"
+      ],
+      "certifications": [
+        "AAFCO"
+      ],
+      "badges": [
+        "Joint Support",
+        "Vet Approved"
+      ],
+      "price_usd": 71.89,
+      "avg_rating": 4.5
+    },
+    {
+      "id": "election-common",
+      "name": "Hundred Expect Formula",
+      "brand": "Watts, Robinson and Nguyen",
+      "species": [
+        "dog"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 35,
+        "fat_pct": 16,
+        "fiber_pct": 2,
+        "calories_per_100g": 319
+      },
+      "tags": [
+        "digestive",
+        "hairball",
+        "joint"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Best Seller",
+        "Premium"
+      ],
+      "price_usd": 28.92,
+      "avg_rating": 4.2
+    },
+    {
+      "id": "special-stand",
+      "name": "Drop Term Formula",
+      "brand": "Trujillo Group",
+      "species": [
+        "dog"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 23,
+        "fat_pct": 13,
+        "fiber_pct": 3,
+        "calories_per_100g": 363
+      },
+      "tags": [
+        "skin",
+        "digestive",
+        "hairball"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Best Seller",
+        "Vet Approved"
+      ],
+      "price_usd": 80.52,
+      "avg_rating": 5.0
+    },
+    {
+      "id": "executive-attorney",
+      "name": "White Yes Formula",
+      "brand": "Walter, Edwards and Rios",
+      "species": [
+        "cat"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 27,
+        "fat_pct": 14,
+        "fiber_pct": 2,
+        "calories_per_100g": 385
+      },
+      "tags": [
+        "grain-free",
+        "large-breed",
+        "omega3"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Best Seller",
+        "Premium"
+      ],
+      "price_usd": 31.14,
+      "avg_rating": 4.6
+    },
+    {
+      "id": "individual-usually",
+      "name": "Question Low Formula",
+      "brand": "Baker and Sons",
+      "species": [
+        "cat"
+      ],
+      "food_type": "wet",
+      "nutritional_content": {
+        "protein_pct": 34,
+        "fat_pct": 8,
+        "fiber_pct": 8,
+        "calories_per_100g": 356
+      },
+      "tags": [
+        "kidney",
+        "grain-free",
+        "large-breed"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Joint Support",
+        "Vet Approved"
+      ],
+      "price_usd": 35.6,
+      "avg_rating": 4.6
+    },
+    {
+      "id": "size-option-nothing",
+      "name": "Skin Pattern Formula",
+      "brand": "Hurst-Ross",
+      "species": [
+        "cat"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 34,
+        "fat_pct": 13,
+        "fiber_pct": 4,
+        "calories_per_100g": 371
+      },
+      "tags": [
+        "omega3",
+        "large-breed",
+        "hairball"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Joint Support",
+        "Vet Approved"
+      ],
+      "price_usd": 28.07,
+      "avg_rating": 5.0
+    },
+    {
+      "id": "discuss-certainly",
+      "name": "Minute Benefit Formula",
+      "brand": "Callahan and Sons",
+      "species": [
+        "cat"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 27,
+        "fat_pct": 17,
+        "fiber_pct": 4,
+        "calories_per_100g": 327
+      },
+      "tags": [
+        "grain-free",
+        "digestive",
+        "omega3"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Premium",
+        "Joint Support"
+      ],
+      "price_usd": 88.9,
+      "avg_rating": 3.9
+    },
+    {
+      "id": "product-collection",
+      "name": "Response Knowledge Formula",
+      "brand": "Brown, James and Ferrell",
+      "species": [
+        "cat"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 28,
+        "fat_pct": 12,
+        "fiber_pct": 2,
+        "calories_per_100g": 411
+      },
+      "tags": [
+        "joint",
+        "hairball",
+        "grain-free"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Best Seller",
+        "Premium"
+      ],
+      "price_usd": 50.19,
+      "avg_rating": 4.9
+    },
+    {
+      "id": "newspaper-enter-on",
+      "name": "Yes Activity Formula",
+      "brand": "Le, Maldonado and Herrera",
+      "species": [
+        "cat"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 32,
+        "fat_pct": 17,
+        "fiber_pct": 4,
+        "calories_per_100g": 331
+      },
+      "tags": [
+        "hairball",
+        "large-breed",
+        "digestive"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Premium",
+        "Best Seller"
+      ],
+      "price_usd": 48.17,
+      "avg_rating": 4.2
+    },
+    {
+      "id": "example-specific",
+      "name": "Grow Brother Formula",
+      "brand": "Graham-Chavez",
+      "species": [
+        "cat"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 26,
+        "fat_pct": 11,
+        "fiber_pct": 5,
+        "calories_per_100g": 397
+      },
+      "tags": [
+        "digestive",
+        "hairball",
+        "grain-free"
+      ],
+      "certifications": [
+        "Organic Certified"
+      ],
+      "badges": [
+        "Premium",
+        "Joint Support"
+      ],
+      "price_usd": 78.36,
+      "avg_rating": 4.2
+    },
+    {
+      "id": "seven-type-serve",
+      "name": "Month Sound Formula",
+      "brand": "Romero Inc",
+      "species": [
+        "cat"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 28,
+        "fat_pct": 14,
+        "fiber_pct": 8,
+        "calories_per_100g": 382
+      },
+      "tags": [
+        "large-breed",
+        "kidney",
+        "grain-free"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Best Seller",
+        "Joint Support"
+      ],
+      "price_usd": 53.12,
+      "avg_rating": 4.9
+    },
+    {
+      "id": "truth-process-fire",
+      "name": "Purpose Movement Formula",
+      "brand": "Gonzalez, Brooks and Martin",
+      "species": [
+        "cat"
+      ],
+      "food_type": "wet",
+      "nutritional_content": {
+        "protein_pct": 27,
+        "fat_pct": 18,
+        "fiber_pct": 2,
+        "calories_per_100g": 431
+      },
+      "tags": [
+        "omega3",
+        "joint",
+        "skin"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Joint Support",
+        "Vet Approved"
+      ],
+      "price_usd": 76.46,
+      "avg_rating": 4.0
+    },
+    {
+      "id": "start-win-nice-why",
+      "name": "Place Game Formula",
+      "brand": "Smith-Hickman",
+      "species": [
+        "cat"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 23,
+        "fat_pct": 11,
+        "fiber_pct": 5,
+        "calories_per_100g": 318
+      },
+      "tags": [
+        "large-breed",
+        "kidney",
+        "omega3"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Best Seller",
+        "Joint Support"
+      ],
+      "price_usd": 68.74,
+      "avg_rating": 4.4
+    },
+    {
+      "id": "unit-theory-surface",
+      "name": "Education Article Formula",
+      "brand": "Humphrey Inc",
+      "species": [
+        "cat"
+      ],
+      "food_type": "raw",
+      "nutritional_content": {
+        "protein_pct": 29,
+        "fat_pct": 10,
+        "fiber_pct": 7,
+        "calories_per_100g": 301
+      },
+      "tags": [
+        "skin",
+        "grain-free",
+        "kidney"
+      ],
+      "certifications": [
+        "AAFCO"
+      ],
+      "badges": [
+        "Best Seller",
+        "Joint Support"
+      ],
+      "price_usd": 56.26,
+      "avg_rating": 3.9
+    },
+    {
+      "id": "bed-sign-mention",
+      "name": "Authority Soon Formula",
+      "brand": "Cannon, Anderson and Alvarez",
+      "species": [
+        "cat"
+      ],
+      "food_type": "dry",
+      "nutritional_content": {
+        "protein_pct": 29,
+        "fat_pct": 9,
+        "fiber_pct": 5,
+        "calories_per_100g": 418
+      },
+      "tags": [
+        "omega3",
+        "grain-free",
+        "kidney"
+      ],
+      "certifications": [
+        "Grain-Free Certified"
+      ],
+      "badges": [
+        "Premium",
+        "Joint Support"
+      ],
+      "price_usd": 51.21,
+      "avg_rating": 4.0
+    }
+  ]
+}
