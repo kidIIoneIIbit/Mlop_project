@@ -1,0 +1,27 @@
+services:
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlruns:/mlruns
+    restart: unless-stopped
+
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app/ml
+    command: python trainer.py --tracking-uri http://mlflow:5000 --final
+    depends_on:
+      - mlflow
+    volumes:
+      - ../backend:/app/backend
+      - ../reports:/app/reports
+      - ./:/app/ml
+      - mlruns:/app/mlruns
+
+volumes:
+  mlruns:
