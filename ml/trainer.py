@@ -52,7 +52,7 @@ random.seed(SEED)
 np.random.seed(SEED)
 
 EXPERIMENT_NAME = "pet-nutrition-recommender"
-MODEL_DIR = Path(__file__).resolve().parent.parent / "backend" / "ml"
+MODEL_DIR = Path(__file__).resolve().parent.parent / "backend" / "ml_model"
 DATA_DIR = Path(__file__).resolve().parent.parent / "backend" / "data"
 
 

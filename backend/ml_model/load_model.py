@@ -33,7 +33,7 @@ for p in [str(BACKEND_ML_DIR), str(ML_DIR)]:
 from model import RecommendationModel
 
 # ── Configuration (from environment variables) ───────────────────────────
-GCS_BUCKET = os.environ.get("MODEL_GCS_BUCKET", "petricommend-model-store")
+GCS_BUCKET = os.environ.get("MODEL_GCS_BUCKET", "petrecommend-model-store")
 GCS_BLOB = os.environ.get("MODEL_GCS_BLOB", "models/model.pkl")
 LOCAL_MODEL_PATH = os.environ.get(
     "MODEL_LOCAL_PATH",

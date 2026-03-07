@@ -61,7 +61,7 @@ class ScoredFood:
     def to_dict(self) -> dict:
         return {
             "food_id": self.food_id,
-            "score": self.score,
+            "score": float(self.score),
             "name": self.name,
             "brand": self.brand,
             "food_type": self.food_type,
@@ -69,8 +69,8 @@ class ScoredFood:
             "nutritional_content": self.nutritional_content,
             "tags": self.tags,
             "badges": self.badges,
-            "price_usd": self.price_usd,
-            "avg_rating": self.avg_rating,
+            "price_usd": float(self.price_usd),
+            "avg_rating": float(self.avg_rating),
             "match_reasons": self.match_reasons,
         }
 

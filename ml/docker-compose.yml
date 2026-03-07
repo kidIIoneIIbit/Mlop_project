@@ -11,8 +11,8 @@ services:
 
   trainer:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: ml/Dockerfile
     working_dir: /app/ml
     command: python trainer.py --tracking-uri http://mlflow:5000 --final
     depends_on:
@@ -22,6 +22,22 @@ services:
       - ../reports:/app/reports
       - ./:/app/ml
       - mlruns:/app/mlruns
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app/backend
+      - ./:/app/ml
+    environment:
+      - MODEL_USE_GCS=false
+      - MODEL_LOCAL_PATH=/app/backend/ml_model/model.pkl
+    depends_on:
+      - mlflow
+    restart: unless-stopped
 
 volumes:
   mlruns:
