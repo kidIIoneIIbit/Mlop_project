@@ -1,0 +1,13 @@
+{
+  "name": "pet-nutrition-ai",
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "dev": "concurrently --names \"FRONTEND,BACKEND\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"npm --prefix frontend run dev\" \"node scripts/run-backend.js\"",
+    "dev:fe": "npm --prefix frontend run dev",
+    "dev:be": "node scripts/run-backend.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

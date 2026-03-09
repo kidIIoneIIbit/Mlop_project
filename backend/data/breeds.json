@@ -1,0 +1,233 @@
+[
+  {
+    "id": "dog-breed-001",
+    "name": "Labrador Retriever",
+    "species": "dog",
+    "size": "large",
+    "weight_range_kg": [25, 36],
+    "life_expectancy_years": [10, 14],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["hip dysplasia", "obesity", "ear infections"],
+    "nutritional_targets": { "protein_min": 22, "fat_min": 8, "fiber_min": 3, "calorie_range": [1500, 2000] }
+  },
+  {
+    "id": "dog-breed-002",
+    "name": "German Shepherd",
+    "species": "dog",
+    "size": "large",
+    "weight_range_kg": [22, 40],
+    "life_expectancy_years": [9, 13],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hip dysplasia", "degenerative myelopathy", "bloat"],
+    "nutritional_targets": { "protein_min": 24, "fat_min": 10, "fiber_min": 3, "calorie_range": [1700, 2200] }
+  },
+  {
+    "id": "dog-breed-003",
+    "name": "Golden Retriever",
+    "species": "dog",
+    "size": "large",
+    "weight_range_kg": [25, 34],
+    "life_expectancy_years": [10, 12],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["hip dysplasia", "cancer", "skin allergies"],
+    "nutritional_targets": { "protein_min": 22, "fat_min": 8, "fiber_min": 3, "calorie_range": [1400, 1900] }
+  },
+  {
+    "id": "dog-breed-004",
+    "name": "French Bulldog",
+    "species": "dog",
+    "size": "small",
+    "weight_range_kg": [8, 14],
+    "life_expectancy_years": [10, 14],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["brachycephalic syndrome", "skin fold dermatitis", "joint issues"],
+    "nutritional_targets": { "protein_min": 24, "fat_min": 10, "fiber_min": 4, "calorie_range": [500, 800] }
+  },
+  {
+    "id": "dog-breed-005",
+    "name": "Beagle",
+    "species": "dog",
+    "size": "medium",
+    "weight_range_kg": [9, 16],
+    "life_expectancy_years": [12, 15],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["obesity", "epilepsy", "ear infections"],
+    "nutritional_targets": { "protein_min": 22, "fat_min": 8, "fiber_min": 4, "calorie_range": [600, 1000] }
+  },
+  {
+    "id": "dog-breed-006",
+    "name": "Poodle",
+    "species": "dog",
+    "size": "medium",
+    "weight_range_kg": [18, 32],
+    "life_expectancy_years": [12, 15],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hip dysplasia", "progressive retinal atrophy", "bloat"],
+    "nutritional_targets": { "protein_min": 24, "fat_min": 10, "fiber_min": 3, "calorie_range": [1000, 1500] }
+  },
+  {
+    "id": "dog-breed-007",
+    "name": "Bulldog",
+    "species": "dog",
+    "size": "medium",
+    "weight_range_kg": [18, 25],
+    "life_expectancy_years": [8, 10],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["brachycephalic syndrome", "skin fold dermatitis", "joint issues"],
+    "nutritional_targets": { "protein_min": 22, "fat_min": 8, "fiber_min": 4, "calorie_range": [1000, 1500] }
+  },
+  {
+    "id": "dog-breed-008",
+    "name": "Rottweiler",
+    "species": "dog",
+    "size": "large",
+    "weight_range_kg": [36, 60],
+    "life_expectancy_years": [8, 11],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hip dysplasia", "heart disease", "cancer"],
+    "nutritional_targets": { "protein_min": 26, "fat_min": 12, "fiber_min": 3, "calorie_range": [2000, 2800] }
+  },
+  {
+    "id": "dog-breed-009",
+    "name": "Yorkshire Terrier",
+    "species": "dog",
+    "size": "small",
+    "weight_range_kg": [2, 4],
+    "life_expectancy_years": [12, 16],
+    "weight_tendency": "normal",
+    "common_health_issues": ["dental disease", "collapsed trachea", "luxating patella"],
+    "nutritional_targets": { "protein_min": 26, "fat_min": 12, "fiber_min": 3, "calorie_range": [150, 300] }
+  },
+  {
+    "id": "dog-breed-010",
+    "name": "Dachshund",
+    "species": "dog",
+    "size": "small",
+    "weight_range_kg": [5, 15],
+    "life_expectancy_years": [12, 16],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["intervertebral disc disease", "obesity", "dental disease"],
+    "nutritional_targets": { "protein_min": 22, "fat_min": 8, "fiber_min": 4, "calorie_range": [400, 700] }
+  },
+  {
+    "id": "dog-breed-011",
+    "name": "Siberian Husky",
+    "species": "dog",
+    "size": "large",
+    "weight_range_kg": [16, 27],
+    "life_expectancy_years": [12, 15],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hip dysplasia", "eye disorders", "zinc deficiency"],
+    "nutritional_targets": { "protein_min": 26, "fat_min": 14, "fiber_min": 3, "calorie_range": [1200, 1800] }
+  },
+  {
+    "id": "cat-breed-001",
+    "name": "Persian",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [3, 6],
+    "life_expectancy_years": [12, 17],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["polycystic kidney disease", "eye discharge", "dental disease"],
+    "nutritional_targets": { "protein_min": 30, "fat_min": 9, "fiber_min": 3, "calorie_range": [200, 350] }
+  },
+  {
+    "id": "cat-breed-002",
+    "name": "Maine Coon",
+    "species": "cat",
+    "size": "large",
+    "weight_range_kg": [5, 11],
+    "life_expectancy_years": [10, 13],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hypertrophic cardiomyopathy", "hip dysplasia", "spinal muscular atrophy"],
+    "nutritional_targets": { "protein_min": 32, "fat_min": 10, "fiber_min": 3, "calorie_range": [300, 500] }
+  },
+  {
+    "id": "cat-breed-003",
+    "name": "Siamese",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [3, 5],
+    "life_expectancy_years": [12, 20],
+    "weight_tendency": "normal",
+    "common_health_issues": ["amyloidosis", "asthma", "dental disease"],
+    "nutritional_targets": { "protein_min": 32, "fat_min": 9, "fiber_min": 2, "calorie_range": [200, 350] }
+  },
+  {
+    "id": "cat-breed-004",
+    "name": "Ragdoll",
+    "species": "cat",
+    "size": "large",
+    "weight_range_kg": [4, 9],
+    "life_expectancy_years": [12, 17],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["hypertrophic cardiomyopathy", "urinary tract issues", "hairballs"],
+    "nutritional_targets": { "protein_min": 30, "fat_min": 10, "fiber_min": 3, "calorie_range": [250, 400] }
+  },
+  {
+    "id": "cat-breed-005",
+    "name": "Bengal",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [4, 7],
+    "life_expectancy_years": [12, 16],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hypertrophic cardiomyopathy", "progressive retinal atrophy", "patellar luxation"],
+    "nutritional_targets": { "protein_min": 34, "fat_min": 12, "fiber_min": 2, "calorie_range": [250, 400] }
+  },
+  {
+    "id": "cat-breed-006",
+    "name": "British Shorthair",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [4, 8],
+    "life_expectancy_years": [12, 17],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["hypertrophic cardiomyopathy", "obesity", "dental disease"],
+    "nutritional_targets": { "protein_min": 30, "fat_min": 9, "fiber_min": 4, "calorie_range": [200, 350] }
+  },
+  {
+    "id": "cat-breed-007",
+    "name": "Sphynx",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [3, 5],
+    "life_expectancy_years": [8, 14],
+    "weight_tendency": "normal",
+    "common_health_issues": ["hypertrophic cardiomyopathy", "skin conditions", "respiratory issues"],
+    "nutritional_targets": { "protein_min": 35, "fat_min": 14, "fiber_min": 2, "calorie_range": [300, 500] }
+  },
+  {
+    "id": "cat-breed-008",
+    "name": "Abyssinian",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [3, 5],
+    "life_expectancy_years": [12, 15],
+    "weight_tendency": "normal",
+    "common_health_issues": ["renal amyloidosis", "progressive retinal atrophy", "gingivitis"],
+    "nutritional_targets": { "protein_min": 34, "fat_min": 12, "fiber_min": 2, "calorie_range": [250, 350] }
+  },
+  {
+    "id": "cat-breed-009",
+    "name": "Scottish Fold",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [3, 6],
+    "life_expectancy_years": [11, 15],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["osteochondrodysplasia", "polycystic kidney disease", "cardiomyopathy"],
+    "nutritional_targets": { "protein_min": 30, "fat_min": 9, "fiber_min": 3, "calorie_range": [200, 350] }
+  },
+  {
+    "id": "cat-breed-010",
+    "name": "Russian Blue",
+    "species": "cat",
+    "size": "medium",
+    "weight_range_kg": [3, 7],
+    "life_expectancy_years": [15, 20],
+    "weight_tendency": "overweight",
+    "common_health_issues": ["obesity", "urinary tract issues", "bladder stones"],
+    "nutritional_targets": { "protein_min": 30, "fat_min": 9, "fiber_min": 4, "calorie_range": [200, 350] }
+  }
+]
