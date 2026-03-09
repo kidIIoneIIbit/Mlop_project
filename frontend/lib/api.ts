@@ -46,6 +46,31 @@ export interface CompareResponse {
   winner: CompareItem | null;
 }
 
+export interface FoodDetail {
+  id: string;
+  food_id: string;
+  name: string;
+  brand: string;
+  species: string;
+  food_type: string;
+  price_usd: number;
+  avg_rating: number;
+  tags: string[];
+  badges: string[];
+  certifications: string[];
+  nutritional_content: {
+    protein: number;
+    fat: number;
+    fiber: number;
+    kcal_per_100g: number;
+  };
+}
+
+export async function getFoodDetail(id: string): Promise<FoodDetail> {
+  const res = await api.get<FoodDetail>(`/foods/${id}`);
+  return res.data;
+}
+
 export function fetchBreeds(species: string) {
   return api.get<{ breeds: Breed[] }>(`/breeds/${species}`);
 }

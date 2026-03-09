@@ -145,9 +145,9 @@ export default function Recommendations() {
                     🐾
                   </h1>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    {profile.breed   && <span className="badge badge-purple">{String(profile.breed)}</span>}
-                    {profile.age     && <span className="badge badge-orange">{String(profile.age)} yrs</span>}
-                    {profile.weight  && <span className="badge badge-teal">{String(profile.weight)} kg</span>}
+                    {!!profile.breed   && <span className="badge badge-purple">{String(profile.breed)}</span>}
+                    {!!profile.age     && <span className="badge badge-orange">{String(profile.age)} yrs</span>}
+                    {!!profile.weight  && <span className="badge badge-teal">{String(profile.weight)} kg</span>}
                     {(profile.conditions as string[])?.map((c) => (
                       <span key={c} className="badge badge-pink">🏥 {c}</span>
                     ))}

@@ -71,7 +71,7 @@ export default function Profile() {
       const res = await postRecommendations(petProfile);
       // Store both profile and recommendations for the results page
       localStorage.setItem('petProfile', JSON.stringify({ ...petProfile, breed: breeds.find(b => b.id === breedId)?.name ?? breedId }));
-      localStorage.setItem('recommendations', JSON.stringify(res.data));
+      localStorage.setItem('apiRecommendations', JSON.stringify(res.data));
       router.push('/results/1');
     } catch (err: any) {
       setError(err?.response?.data?.detail ?? 'Failed to get recommendations. Is the backend running?');
