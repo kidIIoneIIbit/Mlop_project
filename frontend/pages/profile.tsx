@@ -2,41 +2,42 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState, useEffect, FormEvent } from 'react';
-import Layout from '@/components/Layout'; // ตรวจสอบ path ให้ตรงกับโฟลเดอร์ของคุณ
-
-// Mock ข้อมูลสายพันธุ์จาก pet-data.js
-const BREEDS = {
-  dog: [
-    'Mix / Unknown', 'Golden Retriever', 'Labrador Retriever', 'German Shepherd',
-    'French Bulldog', 'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Dachshund',
-    'Siberian Husky', 'Shih Tzu', 'Pomeranian', 'Chihuahua', 'Border Collie',
-    'Maltese', 'Yorkshire Terrier', 'Boxer', 'Great Dane', 'Corgi'
-  ],
-  cat: [
-    'Mix / Unknown', 'Persian', 'Maine Coon', 'Siamese', 'British Shorthair',
-    'Scottish Fold', 'Ragdoll', 'American Shorthair', 'Sphynx', 'Bengal',
-    'Abyssinian', 'Burmese', 'Russian Blue', 'Norwegian Forest', 'Birman'
-  ]
-};
+import Layout from '@/components/Layout';
+import { fetchBreeds, postRecommendations, Breed } from '@/lib/api';
 
 const CONDITIONS_LIST = ['Kidney Disease', 'Obesity / Overweight', 'Food Allergies', 'Sensitive Stomach', 'Joint Care'];
 const GOALS_LIST = ['General Wellness', 'Weight Loss', 'Active Lifestyle', 'Senior Care', 'Coat & Skin'];
+const ACTIVITY_LEVELS = ['low', 'medium', 'high'];
 
 export default function Profile() {
   const router = useRouter();
 
-  // สร้าง State สำหรับเก็บข้อมูลในฟอร์ม
   const [species, setSpecies] = useState<'dog' | 'cat'>('dog');
   const [name, setName] = useState('');
   const [age, setAge] = useState<number | ''>('');
   const [weight, setWeight] = useState<number | ''>('');
-  const [breed, setBreed] = useState('Mix / Unknown');
+  const [breedId, setBreedId] = useState('');
+  const [activityLevel, setActivityLevel] = useState('medium');
   const [conditions, setConditions] = useState<string[]>([]);
   const [goals, setGoals] = useState<string[]>([]);
 
-  // รีเซ็ตสายพันธุ์ทุกครั้งที่เปลี่ยนชนิดสัตว์เลี้ยง
+  const [breeds, setBreeds] = useState<Breed[]>([]);
+  const [loadingBreeds, setLoadingBreeds] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  // Fetch breeds from API when species changes
   useEffect(() => {
-    setBreed(BREEDS[species][0]);
+    setLoadingBreeds(true);
+    setError('');
+    fetchBreeds(species)
+      .then((res) => {
+        const list = res.data.breeds ?? [];
+        setBreeds(list);
+        setBreedId(list.length > 0 ? list[0].id : '');
+      })
+      .catch(() => setError('Failed to load breeds'))
+      .finally(() => setLoadingBreeds(false));
   }, [species]);
 
   // ฟังก์ชันสลับเลือก Chip (Conditions & Goals)
@@ -48,24 +49,35 @@ export default function Profile() {
     }
   };
 
-  // ฟังก์ชัน Submit ฟอร์ม
-  const handleSubmit = (e: FormEvent) => {
+  // Submit form → call recommendation API
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    // จำลองการจัดเตรียมข้อมูลเพื่อส่งให้ Backend (ตามแพลนของ Person B)
+    setSubmitting(true);
+    setError('');
+
     const petProfile = {
-      name, species, breed, age, weight, conditions, goals,
-      timestamp: new Date().toISOString()
+      name,
+      species,
+      breed_id: breedId,
+      age_years: Number(age),
+      weight_kg: Number(weight),
+      activity_level: activityLevel,
+      health_conditions: conditions,
+      goals,
+      top_k: 6,
     };
 
-    // สำหรับตอนนี้เราจะเซฟลง LocalStorage ไว้ก่อน เพื่อจำลองข้อมูลส่งไปหน้า Results
-    localStorage.setItem('petProfile', JSON.stringify(petProfile));
-    
-    // พิมพ์เช็คข้อมูลใน Console
-    console.log("Submitting to API:", petProfile);
-
-    // นำทางไปหน้าผลลัพธ์ (สมมติให้ใช้ id เป็น '1' ก่อน ตามแผนที่จะสร้าง pages/results/[petId].tsx)
-    router.push('/results/1'); 
+    try {
+      const res = await postRecommendations(petProfile);
+      // Store both profile and recommendations for the results page
+      localStorage.setItem('petProfile', JSON.stringify({ ...petProfile, breed: breeds.find(b => b.id === breedId)?.name ?? breedId }));
+      localStorage.setItem('recommendations', JSON.stringify(res.data));
+      router.push('/results/1');
+    } catch (err: any) {
+      setError(err?.response?.data?.detail ?? 'Failed to get recommendations. Is the backend running?');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -114,15 +126,19 @@ export default function Profile() {
               {/* Breed Select */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-2)', marginBottom: '8px' }}>Breed</label>
-                <select value={breed} onChange={(e) => setBreed(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-1)' }}>
-                  {BREEDS[species].map((b) => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
+                <select value={breedId} onChange={(e) => setBreedId(e.target.value)} disabled={loadingBreeds} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-1)' }}>
+                  {loadingBreeds ? (
+                    <option>Loading...</option>
+                  ) : (
+                    breeds.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))
+                  )}
                 </select>
               </div>
 
               {/* Age & Weight Row */}
-              <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-2)', marginBottom: '8px' }}>Age (Years)</label>
                   <input type="number" step="0.1" required value={age} onChange={(e) => setAge(e.target.value ? Number(e.target.value) : '')} placeholder="e.g. 3.5" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-1)' }} />
@@ -131,6 +147,16 @@ export default function Profile() {
                   <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-2)', marginBottom: '8px' }}>Weight (kg)</label>
                   <input type="number" step="0.1" required value={weight} onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')} placeholder="e.g. 12" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-1)' }} />
                 </div>
+              </div>
+
+              {/* Activity Level */}
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-2)', marginBottom: '8px' }}>Activity Level</label>
+                <select value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-1)' }}>
+                  {ACTIVITY_LEVELS.map((l) => (
+                    <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -157,8 +183,14 @@ export default function Profile() {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center', fontSize: '16px', padding: '16px' }}>
-              ✨ Generate Recommendations
+            {error && (
+              <div style={{ background: 'rgba(255,0,0,0.1)', color: '#e74c3c', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+                ⚠️ {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={submitting} className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center', fontSize: '16px', padding: '16px', opacity: submitting ? 0.7 : 1 }}>
+              {submitting ? '⏳ Generating...' : '✨ Generate Recommendations'}
             </button>
           </form>
 

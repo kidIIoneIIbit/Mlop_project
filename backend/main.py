@@ -5,6 +5,7 @@ from routers import model_info
 from routers import breeds
 from routers import foods
 from routers import compare
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="PetriCommend API")
 
@@ -16,6 +17,12 @@ def health():
         "version": "1.0.0"
     }
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow all origins (dev / Docker / VM public IP)
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(
     recommendations.router,

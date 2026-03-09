@@ -1,15 +1,63 @@
 // pages/compare.tsx
 import Head from 'next/head';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-
-// Mock Data สำหรับตารางเปรียบเทียบ
-const COMPARE_DATA = [
-  { id: 'P001', name: 'Renal Support', brand: 'Royal Canin', price: 890, protein: '12%', fat: '18%', fiber: '4%', kcal: 3900, highlight: 'Best for Kidney' },
-  { id: 'P002', name: 'Perfect Weight', brand: 'Hill\'s', price: 750, protein: '28%', fat: '11%', fiber: '10%', kcal: 3200, highlight: 'Best for Diet' },
-  { id: 'P003', name: 'Sensitive Skin', brand: 'Purina', price: 620, protein: '26%', fat: '16%', fiber: '4%', kcal: 3700, highlight: 'Best Value' },
-];
+import { postCompare, CompareItem } from '@/lib/api';
+import Link from 'next/link';
 
 export default function Compare() {
+  const [items, setItems] = useState<CompareItem[]>([]);
+  const [winner, setWinner] = useState<CompareItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('petProfile');
+    const savedLog = localStorage.getItem('clickLog');
+
+    if (!savedProfile || !savedLog) {
+      setError('No profile or liked products found. Go back and like some recommendations first.');
+      setLoading(false);
+      return;
+    }
+
+    const profile = JSON.parse(savedProfile);
+    const log = JSON.parse(savedLog) as { productId: string }[];
+    const foodIds = log.map((l) => l.productId);
+
+    if (foodIds.length < 2) {
+      // Fall back to using stored recommendation food IDs if not enough likes
+      const savedRecs = localStorage.getItem('recommendations');
+      if (savedRecs) {
+        const recs = JSON.parse(savedRecs).recommendations ?? [];
+        const topIds = recs.slice(0, 3).map((r: any) => r.food_id);
+        foodIds.push(...topIds);
+      }
+    }
+
+    const uniqueIds = [...new Set(foodIds)];
+    if (uniqueIds.length === 0) {
+      setError('No food items to compare.');
+      setLoading(false);
+      return;
+    }
+
+    postCompare({
+      food_ids: uniqueIds,
+      species: profile.species,
+      breed_id: profile.breed_id,
+      age_years: profile.age_years ?? 3,
+      activity_level: profile.activity_level ?? 'medium',
+      health_conditions: profile.health_conditions ?? [],
+    })
+      .then((res) => {
+        setItems(res.data.comparison);
+        setWinner(res.data.winner);
+      })
+      .catch(() => setError('Failed to load comparison. Is the backend running?'))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <Layout>
       <Head><title>Compare Foods — PetNutrition AI</title></Head>
@@ -21,40 +69,89 @@ export default function Compare() {
             <p style={{ color: 'var(--text-2)' }}>Side-by-side nutritional breakdown for your top matches.</p>
           </div>
 
-          <div style={{ overflowX: 'auto', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'rgba(123, 111, 240, 0.1)' }}>
-                  <th style={{ padding: '20px', borderBottom: '1px solid var(--border)', width: '25%' }}>Features</th>
-                  {COMPARE_DATA.map(item => (
-                    <th key={item.id} style={{ padding: '20px', borderBottom: '1px solid var(--border)', width: '25%', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: 'var(--accent)', marginBottom: '4px' }}>{item.brand}</div>
-                      <div style={{ fontSize: '16px', fontWeight: 800 }}>{item.name}</div>
-                      <div style={{ marginTop: '8px', fontSize: '11px', display: 'inline-block', background: 'var(--accent)', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>{item.highlight}</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { label: 'Price (THB)', key: 'price', best: 620 },
-                  { label: 'Protein (Min)', key: 'protein', best: '28%' },
-                  { label: 'Fat (Min)', key: 'fat', best: '11%' },
-                  { label: 'Fiber (Max)', key: 'fiber', best: '10%' },
-                  { label: 'Calories (kcal/kg)', key: 'kcal', best: 3200 }
-                ].map((row, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>{row.label}</td>
-                    {COMPARE_DATA.map(item => (
-                      <td key={item.id} style={{ padding: '16px 20px', textAlign: 'center', color: (item as any)[row.key] === row.best ? 'var(--teal)' : 'var(--text-1)', fontWeight: (item as any)[row.key] === row.best ? 800 : 400 }}>
-                        {(item as any)[row.key]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {loading && <p style={{ textAlign: 'center', color: 'var(--text-3)' }}>Loading comparison...</p>}
+
+          {error && (
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ color: '#e74c3c', marginBottom: '16px' }}>⚠️ {error}</p>
+              <Link href="/results/1" className="btn btn-primary">← Back to Results</Link>
+            </div>
+          )}
+
+          {!loading && !error && items.length > 0 && (
+            <>
+              {winner && (
+                <div style={{ textAlign: 'center', marginBottom: '24px', padding: '16px', background: 'rgba(0,201,167,0.1)', borderRadius: '12px', border: '1px solid var(--teal)' }}>
+                  🏆 <strong>Winner:</strong> {winner.name} ({winner.brand}) — Score: {Math.round(winner.score)}/100
+                </div>
+              )}
+
+              <div style={{ overflowX: 'auto', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(123, 111, 240, 0.1)' }}>
+                      <th style={{ padding: '20px', borderBottom: '1px solid var(--border)', width: '20%' }}>Features</th>
+                      {items.map(item => (
+                        <th key={item.food_id} style={{ padding: '20px', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--accent)', marginBottom: '4px' }}>{item.brand}</div>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>{item.name}</div>
+                          {winner && item.food_id === winner.food_id && (
+                            <div style={{ marginTop: '8px', fontSize: '11px', display: 'inline-block', background: 'var(--accent)', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>🏆 Winner</div>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Match Score</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center', fontWeight: 700, color: 'var(--teal)' }}>
+                          {Math.round(item.score)}/100
+                        </td>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Price (USD)</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center' }}>${item.price_usd?.toFixed(2)}</td>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Protein</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center' }}>{item.nutritional_content?.protein ?? '-'}%</td>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Fat</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center' }}>{item.nutritional_content?.fat ?? '-'}%</td>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Fiber</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center' }}>{item.nutritional_content?.fiber ?? '-'}%</td>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Calories (kcal/100g)</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center' }}>{item.nutritional_content?.kcal_per_100g ?? '-'}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, color: 'var(--text-2)' }}>Rating</td>
+                      {items.map(item => (
+                        <td key={item.food_id} style={{ padding: '16px 20px', textAlign: 'center' }}>★ {item.avg_rating?.toFixed(1)}</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
 
         </div>
       </div>

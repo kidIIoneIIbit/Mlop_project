@@ -3,14 +3,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import Layout from '@/components/Layout'; // ตรวจสอบ path ให้ตรงกับโปรเจกต์คุณ
-
-// Mock ข้อมูลสินค้า (จำลองจาก pet-data.js)
-const MOCK_PRODUCTS = [
-  { id: 'P001', name: 'Royal Canin Renal Support', brand: 'Royal Canin', emoji: '🐕', price: 890, unit: '3kg', tags: ['kidney', 'senior'], diseaseSupport: ['Kidney Care'], score: 95, reason: 'Matched clinical needs for Kidney Disease. Low phosphorus.' },
-  { id: 'P002', name: 'Hill\'s Science Diet Perfect Weight', brand: 'Hill\'s', emoji: '🦴', price: 750, unit: '2.5kg', tags: ['weight control', 'adult'], diseaseSupport: ['Obesity'], score: 88, reason: 'High fiber, clinically proven for weight management.' },
-  { id: 'P003', name: 'Purina Pro Plan Sensitive Skin', brand: 'Purina', emoji: '🐟', price: 620, unit: '2kg', tags: ['salmon', 'sensitive'], diseaseSupport: ['Food Allergies'], score: 82, reason: 'Contains omega fatty acids to support coat & skin.' },
-];
+import Layout from '@/components/Layout';
+import { RecommendationItem } from '@/lib/api';
 
 const SCORE_COLORS = [
   'linear-gradient(90deg,#fdcb6e,#e17055)',
@@ -22,48 +16,52 @@ export default function Recommendations() {
   const router = useRouter();
   const { petId } = router.query; // รับค่า ID จาก URL เช่น /results/1
 
-  // สร้าง States
+  // States
   const [profile, setProfile] = useState<any>(null);
+  const [products, setProducts] = useState<RecommendationItem[]>([]);
   const [clickLog, setClickLog] = useState<any[]>([]);
   const [likedIds, setLikedIds] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [animateBars, setAnimateBars] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // โหลดข้อมูลจาก LocalStorage ตอนเปิดหน้าเว็บ
+  // Load profile & recommendations from localStorage (set by profile page API call)
   useEffect(() => {
     const savedProfile = localStorage.getItem('petProfile');
+    const savedRecs = localStorage.getItem('recommendations');
     const savedLog = localStorage.getItem('clickLog');
     
     if (savedProfile) setProfile(JSON.parse(savedProfile));
+    if (savedRecs) {
+      const parsed = JSON.parse(savedRecs);
+      setProducts(parsed.recommendations ?? []);
+    }
     if (savedLog) {
       const parsedLog = JSON.parse(savedLog);
       setClickLog(parsedLog);
       setLikedIds(parsedLog.map((log: any) => log.productId));
     }
     
-    setMounted(true); // ป้องกัน Hydration Error
-
-    // แอนิเมชันหลอดคะแนน
+    setMounted(true);
     const timer = setTimeout(() => setAnimateBars(true), 300);
     return () => clearTimeout(timer);
   }, []);
 
-  // ฟังก์ชันกดหัวใจ (Mark Interested)
-  const handleLike = (productId: string, productName: string) => {
-    if (likedIds.includes(productId)) return;
+  // Mark a product as interested
+  const handleLike = (foodId: string, foodName: string) => {
+    if (likedIds.includes(foodId)) return;
 
-    const newLikedIds = [...likedIds, productId];
-    const newLog = [...clickLog, { productId, productName, timestamp: new Date().toISOString() }];
+    const newLikedIds = [...likedIds, foodId];
+    const newLog = [...clickLog, { productId: foodId, productName: foodName, timestamp: new Date().toISOString() }];
     
     setLikedIds(newLikedIds);
     setClickLog(newLog);
     localStorage.setItem('clickLog', JSON.stringify(newLog));
 
-    alert(`❤️ Saved! ${productName} added to your interests.`); // แทน showToast ชั่วคราว
+    alert(`❤️ Saved! ${foodName} added to your interests.`);
   };
 
-  // ฟังก์ชันล้างประวัติการคลิก
+  // Clear interest log
   const clearInterests = () => {
     setLikedIds([]);
     setClickLog([]);
@@ -71,7 +69,7 @@ export default function Recommendations() {
     alert('💡 Interest log reset. Recommendations refreshed.');
   };
 
-  // ฟังก์ชัน Refresh
+  // Refresh recommendations
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
@@ -80,7 +78,7 @@ export default function Recommendations() {
     }, 600);
   };
 
-  // เลี่ยงปัญหาจอกะพริบตอนโหลดข้อมูลจาก localStorage (Hydration)
+  // Prevent Hydration mismatch
   if (!mounted) return null;
 
   return (
@@ -101,6 +99,15 @@ export default function Recommendations() {
                 <p>Please create a profile first to get recommendations.</p>
               </div>
               <Link href="/profile" className="btn btn-primary">Create Profile →</Link>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="adaptive-banner" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div className="banner-icon">📭</div>
+              <div className="banner-text">
+                <strong>No recommendations yet</strong>
+                <p>We couldn&apos;t find matching foods. Try adjusting your pet&apos;s profile.</p>
+              </div>
+              <Link href="/profile" className="btn btn-primary">Edit Profile →</Link>
             </div>
           ) : (
             <>
@@ -153,14 +160,16 @@ export default function Recommendations() {
 
               {/* Recommendation Grid */}
               <div className="rec-grid">
-                {MOCK_PRODUCTS.map((p, i) => {
+                {products.map((p, i) => {
                   const rankNum = i + 1;
-                  const isLiked = likedIds.includes(p.id);
+                  const isLiked = likedIds.includes(p.food_id);
+                  const emoji = profile?.species === 'cat' ? '🐱' : '🐕';
+                  const scorePercent = Math.min(p.score, 100);
                   
                   return (
-                    <div key={p.id} className="rec-card fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div key={p.food_id} className="rec-card fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
                       <div className={`rank-badge rank-${rankNum}`}>{rankNum === 1 ? '🥇' : rankNum === 2 ? '🥈' : rankNum === 3 ? '🥉' : rankNum}</div>
-                      <div className="product-img" style={{ fontSize: '72px' }}>{p.emoji}</div>
+                      <div className="product-img" style={{ fontSize: '72px' }}>{emoji}</div>
                       
                       <div className="card-body">
                         <div className="product-brand">{p.brand}</div>
@@ -169,27 +178,28 @@ export default function Recommendations() {
                         <div className="score-wrap">
                           <div className="score-header">
                             <span className="score-label">Relevance Score</span>
-                            <span className="score-val">{p.score}/100</span>
+                            <span className="score-val">{scorePercent}/100</span>
                           </div>
                           <div className="score-bar">
-                            <div className="score-fill" style={{ background: SCORE_COLORS[i % SCORE_COLORS.length], width: animateBars ? `${p.score}%` : '0%' }}></div>
+                            <div className="score-fill" style={{ background: SCORE_COLORS[i % SCORE_COLORS.length], width: animateBars ? `${scorePercent}%` : '0%' }}></div>
                           </div>
                         </div>
                         
-                        <div className="rec-reason"><span className="reason-icon">💡</span>{p.reason}</div>
+                        <div className="rec-reason"><span className="reason-icon">💡</span>{p.match_reasons?.[0] ?? 'Matched based on pet profile'}</div>
                         
                         <div className="rec-tags">
-                          {p.diseaseSupport.map(d => <span key={d} className="rec-tag rec-tag-teal">{d}</span>)}
-                          {p.tags.map(t => <span key={t} className="rec-tag rec-tag-purple">{t}</span>)}
-                          <span className="rec-tag rec-tag-orange">฿{p.price.toLocaleString()} / {p.unit}</span>
+                          {p.badges?.map(d => <span key={d} className="rec-tag rec-tag-teal">{d}</span>)}
+                          {p.tags?.map(t => <span key={t} className="rec-tag rec-tag-purple">{t}</span>)}
+                          <span className="rec-tag rec-tag-orange">${p.price_usd?.toFixed(2)}</span>
+                          {p.avg_rating > 0 && <span className="rec-tag rec-tag-orange">★ {p.avg_rating?.toFixed(1)}</span>}
                         </div>
                         
                         <div className="card-actions">
-                          <button className={`btn btn-like ${isLiked ? 'liked' : ''}`} onClick={() => handleLike(p.id, p.name)}>
+                          <button className={`btn btn-like ${isLiked ? 'liked' : ''}`} onClick={() => handleLike(p.food_id, p.name)}>
                             {isLiked ? '❤️ Interested' : '🤍 Interested'}
                           </button>
-                          <Link href={`/product/${p.id}`} className="btn btn-outline">
-                            🔍 View Details
+                          <Link href="/compare" className="btn btn-outline">
+                            ⚖️ Compare
                           </Link>
                         </div>
                       </div>
