@@ -9,7 +9,7 @@ scipy>=1.11,<1.13.0
 scikit-learn>=1.3
 
 # Training & experiment tracking
-mlflow==3.4
+mlflow==3.4.0
 matplotlib>=3.7
 faker>=19.0
 

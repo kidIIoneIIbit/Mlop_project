@@ -19,8 +19,8 @@ export default function Home() {
     };
 
     const timeout = setTimeout(() => {
-      animateCounter(document.getElementById('stat-prod'), 20);
-      animateCounter(document.getElementById('stat-breeds'), 35);
+      animateCounter(document.getElementById('stat-prod'), 24);
+      animateCounter(document.getElementById('stat-breeds'), 20);
       animateCounter(document.getElementById('stat-acc'), 82, 1400, '%');
       animateCounter(document.getElementById('stat-time'), 0.8, 1000, 's');
     }, 600);
