@@ -58,7 +58,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "backend" / "data"
 # GCS upload configuration
 GCS_BUCKET = os.environ.get("MODEL_GCS_BUCKET", "petrecommend-model-store")
 GCS_PREFIX = os.environ.get("MODEL_GCS_PREFIX", "models/")
-UPLOAD_TO_GCS = os.environ.get("MODEL_UPLOAD_GCS", "true").lower() == "true"
+UPLOAD_TO_GCS = os.environ.get("MODEL_UPLOAD_GCS", "false").lower() == "true"
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -369,7 +369,7 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
     # ── Experiment 1: CBF Baseline ───────────────────────────────────────
     print("\n🔬 Experiment 1: CBF Baseline")
     t0 = time.time()
-    cbf_metrics = run_cbf_experiment(breeds, foods, interactions, k=5)
+    cbf_metrics = run_cbf_experiment(breeds, foods, interactions, k=5)  # ✏️ ADJUSTABLE: k = number of recommendations
     cbf_metrics["training_time_s"] = round(time.time() - t0, 2)
 
     cbf_params = {"method": "cbf", "k": 5, "training_round": training_round}
@@ -408,18 +408,28 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
         f"Test: {test_matrix.nnz} interactions"
     )
 
-    # Experiment configurations
+    # ┌──────────────────────────────────────────────────────────────────┐
+    # │  ✏️ ADJUSTABLE PARAMETERS — Modify experiments below            │
+    # │                                                                  │
+    # │  loss:           "warp" (ranking) or "bpr" (pairwise)            │
+    # │  num_components: Embedding dimensions (32, 64, 128, etc.)       │
+    # │  epochs:         Number of training iterations (more = slower)  │
+    # │  learning_rate:  Step size (0.01–0.1, lower = more stable)      │
+    # │  k:              Number of recommendations to evaluate          │
+    # │                                                                  │
+    # │  You can add/remove experiments by editing this list.           │
+    # └──────────────────────────────────────────────────────────────────┘
     lightfm_configs = [
         {
             "name": "exp2_lightfm_warp_32",
             "run_name": "exp2_lightfm_warp_32",
             "params": {
                 "method": "lightfm",
-                "loss": "warp",
-                "num_components": 32,
-                "epochs": 30,
-                "learning_rate": 0.05,
-                "k": 5,
+                "loss": "warp",              # ✏️ ADJUSTABLE: "warp" or "bpr"
+                "num_components": 32,        # ✏️ ADJUSTABLE: embedding dimensions
+                "epochs": 30,                # ✏️ ADJUSTABLE: training iterations
+                "learning_rate": 0.05,       # ✏️ ADJUSTABLE: step size
+                "k": 5,                      # ✏️ ADJUSTABLE: top-k recommendations
             },
         },
         {
@@ -427,10 +437,10 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
             "run_name": "exp3_lightfm_warp_64",
             "params": {
                 "method": "lightfm",
-                "loss": "warp",
-                "num_components": 64,
-                "epochs": 50,
-                "learning_rate": 0.05,
+                "loss": "warp",              # ✏️ ADJUSTABLE
+                "num_components": 64,        # ✏️ ADJUSTABLE
+                "epochs": 50,                # ✏️ ADJUSTABLE
+                "learning_rate": 0.05,       # ✏️ ADJUSTABLE
                 "k": 5,
             },
         },
@@ -439,10 +449,10 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
             "run_name": "exp4_lightfm_bpr_32",
             "params": {
                 "method": "lightfm",
-                "loss": "bpr",
-                "num_components": 32,
-                "epochs": 30,
-                "learning_rate": 0.05,
+                "loss": "bpr",               # ✏️ ADJUSTABLE
+                "num_components": 32,        # ✏️ ADJUSTABLE
+                "epochs": 30,                # ✏️ ADJUSTABLE
+                "learning_rate": 0.05,       # ✏️ ADJUSTABLE
                 "k": 5,
             },
         },
@@ -611,10 +621,8 @@ def _register_best_model(best_name: str, results: dict, training_round: int = 1)
     MODEL_NAME = "pet-nutrition-recommender"
 
     try:
-        run_id = results[best_name]["run_id"]
         metrics = results[best_name]["metrics"]
         params = results[best_name]["params"]
-        model_uri = f"runs:/{run_id}/model"
 
         # Build a rich description
         description = (
@@ -635,7 +643,28 @@ def _register_best_model(best_name: str, results: dict, training_round: int = 1)
             f"  Epochs:      {params.get('epochs', 'N/A')}\n"
         )
 
-        # Register model
+        # Create a dedicated run to log the model artifact for registration
+        model_pkl_path = MODEL_DIR / "model.pkl"
+        if not model_pkl_path.exists():
+            print(f"  ⚠ Model file not found at {model_pkl_path} — skipping registration")
+            return
+
+        run_name = f"round{training_round}_best_model"
+        with mlflow.start_run(run_name=run_name) as run:
+            # Log the model pickle as an artifact
+            mlflow.log_artifact(str(model_pkl_path), artifact_path="model")
+            mlflow.log_metrics({
+                k: v for k, v in metrics.items()
+                if isinstance(v, (int, float))
+            })
+            mlflow.set_tag("training_round", str(training_round))
+            mlflow.set_tag("best_experiment", best_name)
+            mlflow.set_tag("trained_at", datetime.now().isoformat())
+            mlflow.set_tag("model_type", "best_model")
+
+            model_uri = f"runs:/{run.info.run_id}/model"
+
+        # Register model from the run that has the artifact
         registered = mlflow.register_model(
             model_uri=model_uri,
             name=MODEL_NAME,

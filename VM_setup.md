@@ -234,3 +234,40 @@ gcloud compute instances add-tags YOUR_VM_NAME \
 ```
 
 After the rule is active the UI is accessible at `http://<VM_EXTERNAL_IP>:5000`.
+
+---
+
+## 10. Upload Trained Model to GCS
+
+After training, the model is saved locally at `backend/ml_model/model.pkl`. To make it available to other environments (e.g., production backend), upload it manually to Google Cloud Storage.
+
+### Upload using gsutil (from local machine or VM with proper scopes)
+
+```bash
+# Upload the latest model
+gsutil cp backend/ml_model/model.pkl gs://petrecommend-model-store/models/model.pkl
+
+# Upload a versioned copy (replace vN with actual version)
+gsutil cp backend/ml_model/model_v3.pkl gs://petrecommend-model-store/models/model_v3.pkl
+
+# Upload the final model (if trained with --final)
+gsutil cp backend/ml_model/model_v3_final.pkl gs://petrecommend-model-store/models/model_v3_final.pkl
+```
+
+### List models in the bucket
+
+```bash
+gsutil ls -l gs://petrecommend-model-store/models/
+```
+
+### (Optional) Enable auto-upload from trainer
+
+If your VM has the correct API scopes (see Section 8, Option C), you can enable auto-upload by setting the environment variable in `ml/docker-compose.yml`:
+
+```yaml
+trainer:
+  environment:
+    - MODEL_UPLOAD_GCS=true
+```
+
+> **Note:** The VM must have **Storage Object Admin** permission. If you get a 403 error, fix the VM API scopes first (see Section 8, Option C).
