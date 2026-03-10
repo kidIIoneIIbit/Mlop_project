@@ -19,6 +19,11 @@ PetNutrition Recommendation is a full-stack application that uses machine learni
 
 ---
 
+### UX/UI Figma Design
+[Figma](https://www.figma.com/proto/LsJOZDeGZeGeySqZBFfGQO/MLOps-Prototype?node-id=0-1&t=vS7egRkZRdijbBw2-1)
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
