@@ -181,7 +181,7 @@ export default function Recommendations() {
                   <button className="btn btn-ghost btn-sm" onClick={handleRefresh} disabled={isRefreshing}>
                     {isRefreshing ? '⏳ Refreshing…' : '🔄 Re-profile'}
                   </button>
-                  <Link href="/profile" className="btn btn-ghost btn-sm">✏️ Edit Profile</Link>
+                  <Link href="/my-pet" className="btn btn-ghost btn-sm">✏️ Edit Pet Profile</Link>
                 </div>
               </div>
 

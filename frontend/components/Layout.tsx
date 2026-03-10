@@ -1,16 +1,39 @@
 // components/Layout.tsx
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const router = useRouter(); // 👈 เรียกใช้งาน router เพื่อเช็ค URL ปัจจุบัน
+  const router = useRouter();
+  const [petName, setPetName] = useState<string | null>(null);
 
-  // ฟังก์ชันช่วยเช็คว่าควรใส่คลาส active ไหม
+  useEffect(() => {
+    // Check for saved pet profile
+    const saved = localStorage.getItem('petProfile');
+    if (saved) {
+      try {
+        const p = JSON.parse(saved);
+        setPetName(p.name || null);
+      } catch { setPetName(null); }
+    }
+
+    // Listen for storage changes (when profile is updated from another page)
+    const handleStorage = () => {
+      const s = localStorage.getItem('petProfile');
+      if (s) {
+        try { setPetName(JSON.parse(s).name || null); } catch { setPetName(null); }
+      } else {
+        setPetName(null);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [router.pathname]); // re-check when navigating
+
   const isActive = (path: string) => {
     if (path === '/' && router.pathname === '/') return 'active';
     if (path !== '/' && router.pathname.startsWith(path)) return 'active';
@@ -28,9 +51,11 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </Link>
         <nav className="nav-links">
-          {/* 👇 ใช้เงื่อนไขสลับคลาส active อัตโนมัติตาม URL */}
           <Link href="/" className={`nav-link ${isActive('/')}`}>Home</Link>
           <Link href="/profile" className={`nav-link ${isActive('/profile') || isActive('/results')}`}>Get Recommendation</Link>
+          <Link href="/my-pet" className={`nav-link nav-link-highlight ${isActive('/my-pet')}`}>
+            🐾 My Pet Profile{petName ? ` · ${petName}` : ''}
+          </Link>
           <Link href="/compare" className={`nav-link ${isActive('/compare')}`}>Compare</Link>
           <Link href="/admin" className={`nav-link ${isActive('/admin')}`}>Admin Demo</Link>
         </nav>
