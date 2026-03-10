@@ -1,6 +1,6 @@
 // pages/compare.tsx
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { fetchFoods, postCompare, FoodDetail, CompareItem } from '@/lib/api';
 
@@ -19,6 +19,9 @@ export default function Compare() {
   const [compResult, setCompResult] = useState<CompareItem[] | null>(null);
   const [compWinner, setCompWinner] = useState<CompareItem | null>(null);
   const [compError, setCompError] = useState('');
+
+  // Ref for scrolling to comparison results
+  const compResultsRef = useRef<HTMLDivElement>(null);
 
   // Fetch all foods on mount
   useEffect(() => {
@@ -91,6 +94,10 @@ export default function Compare() {
       });
       setCompResult(res.data.comparison);
       setCompWinner(res.data.winner);
+      // Scroll to results after a short delay to allow DOM to render
+      setTimeout(() => {
+        compResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } catch {
       setCompError('Failed to compare. Is the backend running?');
     } finally {
@@ -381,7 +388,7 @@ export default function Compare() {
 
               {/* Comparison Result Table */}
               {compResult && compResult.length > 0 && (
-                <div id="comparison-results" className="fade-in" style={{ marginTop: '16px', marginBottom: '40px' }}>
+                <div ref={compResultsRef} id="comparison-results" className="fade-in" style={{ marginTop: '16px', marginBottom: '40px' }}>
                   <div className="glow-line" style={{ marginBottom: '32px' }}></div>
 
                   <div style={{ textAlign: 'center', marginBottom: '24px' }}>

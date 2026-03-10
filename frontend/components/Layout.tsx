@@ -57,7 +57,6 @@ export default function Layout({ children }: LayoutProps) {
             🐾 My Pet Profile{petName ? ` · ${petName}` : ''}
           </Link>
           <Link href="/compare" className={`nav-link ${isActive('/compare')}`}>Compare</Link>
-          <Link href="/admin" className={`nav-link ${isActive('/admin')}`}>Admin Demo</Link>
         </nav>
         <Link href="/profile" className="btn btn-primary">
           <span className="emoji">🐾</span> Start Recommendation
@@ -67,7 +66,7 @@ export default function Layout({ children }: LayoutProps) {
       <main>{children}</main>
 
       <footer style={{ textAlign: 'center', padding: '24px', color: 'var(--text-3)', fontSize: '13px', borderTop: '1px solid var(--border)' }}>
-        🐾 PetNutrition · Built with ❤️ for pets everywhere · <Link href="/admin" style={{ color: 'var(--text-3)' }}>Admin</Link>
+        🐾 PetNutrition · Built with ❤️ for pets everywhere
       </footer>
     </>
   );
