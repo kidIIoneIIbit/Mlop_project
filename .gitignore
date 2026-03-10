@@ -74,3 +74,8 @@ logs/
 !backend/data/breeds.json
 !backend/data/foods.json
 !backend/data/interactions.json
+
+MLDataRole.md
+group-work-split-plan (1).md
+admin.html
+cov_report.txt
