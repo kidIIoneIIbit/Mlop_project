@@ -290,26 +290,37 @@ class RecommendationModel:
         if not species_item_indices:
             return self._recommend_cbf(pet_profile, top_k)
 
-        # Use user index 0 as a proxy (cold-start — rely on item features)
+        # Use user index 0 as a proxy (cold-start — rely on item features for popularity)
         item_indices = np.array(species_item_indices)
-        scores = self._model.predict(0, item_indices, item_features=item_features)
+        lfm_scores = self._model.predict(0, item_indices, item_features=item_features)
 
-        # Rank by score
-        ranked_indices = np.argsort(-scores)[:top_k]
         breed_targets = self._get_breed_targets(pet_profile)
 
+        # Normalize LightFM scores to 0-100
+        lfm_max = lfm_scores.max() if len(lfm_scores) > 0 else 1.0
+        lfm_min = lfm_scores.min() if len(lfm_scores) > 0 else 0.0
+        lfm_range = lfm_max - lfm_min if lfm_max != lfm_min else 1.0
+        lfm_scores_norm = ((lfm_scores - lfm_min) / lfm_range) * 100
+
+        # Combine LightFM popularity score with personalized CBF score
+        final_scores = np.zeros(len(species_item_indices))
+        for i, item_idx in enumerate(item_indices):
+            food = species_food_map[item_idx]
+            personal_score = cbf_score(pet_profile, food, breed_targets)
+            
+            # 70% personalized attribute matching + 30% LightFM collaborative strength
+            final_scores[i] = (personal_score * 0.70) + (lfm_scores_norm[i] * 0.30)
+
+        # Rank by combined score
+        ranked_indices = np.argsort(-final_scores)[:top_k]
+
         results: list[ScoredFood] = []
-        max_score = scores.max() if len(scores) > 0 else 1.0
-        min_score = scores.min() if len(scores) > 0 else 0.0
-        score_range = max_score - min_score if max_score != min_score else 1.0
 
         for rank_pos in ranked_indices:
             item_idx = item_indices[rank_pos]
             food = species_food_map[item_idx]
 
-            # Normalize score to 0–100
-            normalized_score = ((scores[rank_pos] - min_score) / score_range) * 100
-            normalized_score = round(max(0, min(100, normalized_score)), 2)
+            normalized_score = round(max(0, min(100, final_scores[rank_pos])), 2)
 
             reasons = _generate_match_reasons(pet_profile, food, breed_targets)
             results.append(
