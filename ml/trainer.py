@@ -55,6 +55,11 @@ EXPERIMENT_NAME = "pet-nutrition-recommender"
 MODEL_DIR = Path(__file__).resolve().parent.parent / "backend" / "ml_model"
 DATA_DIR = Path(__file__).resolve().parent.parent / "backend" / "data"
 
+# GCS upload configuration
+GCS_BUCKET = os.environ.get("MODEL_GCS_BUCKET", "petrecommend-model-store")
+GCS_PREFIX = os.environ.get("MODEL_GCS_PREFIX", "models/")
+UPLOAD_TO_GCS = os.environ.get("MODEL_UPLOAD_GCS", "true").lower() == "true"
+
 
 # ════════════════════════════════════════════════════════════════════════════
 #  EVALUATION HELPERS
@@ -99,7 +104,7 @@ def run_cbf_experiment(
 ) -> dict[str, float]:
     """
     Evaluate CBF baseline: score foods for each user-species and compute
-    Precision@k and NDCG@k averaged across all test users.
+    Precision@k, NDCG@k, and Coverage averaged across all test users.
     """
     # Build test set: last 20% of each user's interactions
     from collections import defaultdict
@@ -110,6 +115,8 @@ def run_cbf_experiment(
 
     precisions = []
     ndcgs = []
+    all_recommended_items: set = set()  # Track unique items recommended across all users
+    total_items = len(foods)  # Total catalog size
 
     for user_id, user_ints in user_interactions.items():
         if len(user_ints) < 3:
@@ -137,13 +144,17 @@ def run_cbf_experiment(
 
         top_foods = score_all_foods(pet_profile, foods, breeds, top_k=k)
         recommended = [f["food_id"] for f in top_foods]
+        all_recommended_items.update(recommended)
 
         precisions.append(precision_at_k(recommended, test_items, k))
         ndcgs.append(ndcg_at_k(recommended, test_items, k))
 
+    coverage = len(all_recommended_items) / total_items if total_items > 0 else 0.0
+
     metrics = {
         "precision_at_5": float(np.mean(precisions)) if precisions else 0.0,
         "ndcg_at_5": float(np.mean(ndcgs)) if ndcgs else 0.0,
+        "coverage": round(coverage, 4),
     }
 
     return metrics
@@ -210,9 +221,10 @@ def evaluate_lightfm_model(
         num_threads=2,
     ).mean()
 
-    # Compute NDCG@k manually from LightFM predictions
+    # Compute NDCG@k and Coverage manually from LightFM predictions
     n_users, n_items = test_matrix.shape
     ndcgs = []
+    all_recommended_items: set = set()  # Track unique items for coverage
     test_csr = test_matrix.tocsr()
 
     for user_id in range(n_users):
@@ -226,15 +238,57 @@ def evaluate_lightfm_model(
             item_features=item_features,
         )
         top_k_items = np.argsort(-scores)[:k].tolist()
+        all_recommended_items.update(top_k_items)
         ndcgs.append(ndcg_at_k(top_k_items, test_items, k))
+
+    coverage = len(all_recommended_items) / n_items if n_items > 0 else 0.0
 
     metrics = {
         "precision_at_5": float(prec),
         "ndcg_at_5": float(np.mean(ndcgs)) if ndcgs else 0.0,
         "auc_score": float(auc),
+        "coverage": round(coverage, 4),
     }
 
     return metrics
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  TRAINING ROUND DETECTION
+# ════════════════════════════════════════════════════════════════════════════
+
+
+def _get_next_training_round() -> int:
+    """
+    Auto-detect the next training round by scanning existing MLflow runs
+    for the 'training_round' tag. Returns the next round number (1-based).
+    """
+    try:
+        experiment = mlflow.get_experiment_by_name(EXPERIMENT_NAME)
+        if experiment is None:
+            return 1
+
+        client = mlflow.tracking.MlflowClient()
+        runs = client.search_runs(
+            experiment_ids=[experiment.experiment_id],
+            max_results=1000,
+        )
+
+        max_round = 0
+        for run in runs:
+            round_tag = run.data.tags.get("training_round", "0")
+            try:
+                r = int(round_tag)
+                if r > max_round:
+                    max_round = r
+            except ValueError:
+                pass
+
+        return max_round + 1
+
+    except Exception as e:
+        print(f"  ⚠ Could not detect training round: {e}")
+        return 1
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -246,6 +300,7 @@ def log_experiment(
     run_name: str,
     params: dict[str, Any],
     metrics: dict[str, float],
+    training_round: int = 1,
     model_obj: Any = None,
     artifacts: dict[str, str] | None = None,
 ) -> str:
@@ -253,6 +308,10 @@ def log_experiment(
     with mlflow.start_run(run_name=run_name) as run:
         mlflow.log_params(params)
         mlflow.log_metrics(metrics)
+
+        # Tag with training round for easy filtering in MLflow UI
+        mlflow.set_tag("training_round", str(training_round))
+        mlflow.set_tag("trained_at", datetime.now().isoformat())
 
         if artifacts:
             for name, path in artifacts.items():
@@ -282,6 +341,10 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
     """
     Run all 4 experiments and log to MLflow.
 
+    Each training session is auto-versioned with a round number.
+    Run names are prefixed: round{N}_exp1_cbf_baseline, etc.
+    All runs are tagged with 'training_round' for easy filtering.
+
     Returns dict of {experiment_name: {params, metrics, run_id}}
     """
     if tracking_uri:
@@ -292,8 +355,13 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
 
     mlflow.set_experiment(EXPERIMENT_NAME)
 
+    # ── Detect training round ────────────────────────────────────────────
+    training_round = _get_next_training_round()
+    print(f"\n🔄 Training Round: {training_round}")
+    print(f"   All runs will be tagged: training_round={training_round}")
+
     # ── Load data ────────────────────────────────────────────────────────
-    print("📂 Loading data …")
+    print("\n📂 Loading data …")
     breeds, foods, interactions = load_all_data()
 
     results: dict[str, Any] = {}
@@ -304,11 +372,13 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
     cbf_metrics = run_cbf_experiment(breeds, foods, interactions, k=5)
     cbf_metrics["training_time_s"] = round(time.time() - t0, 2)
 
-    cbf_params = {"method": "cbf", "k": 5}
+    cbf_params = {"method": "cbf", "k": 5, "training_round": training_round}
+    run_name = f"round{training_round}_exp1_cbf_baseline"
     cbf_run_id = log_experiment(
-        run_name="exp1_cbf_baseline",
+        run_name=run_name,
         params=cbf_params,
         metrics=cbf_metrics,
+        training_round=training_round,
     )
     results["exp1_cbf_baseline"] = {
         "params": cbf_params,
@@ -324,7 +394,7 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
     if not LIGHTFM_AVAILABLE:
         print("\n⚠ LightFM not available — skipping experiments 2–4.")
         print("  Install LightFM on Linux/GCP to run full pipeline.")
-        _save_results(results)
+        _save_results(results, training_round)
         return results
 
     # Build LightFM dataset
@@ -407,10 +477,13 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
         )
         metrics["training_time_s"] = train_time
 
+        params["training_round"] = training_round
+        versioned_run_name = f"round{training_round}_{config['run_name']}"
         run_id = log_experiment(
-            run_name=config["run_name"],
+            run_name=versioned_run_name,
             params=params,
             metrics=metrics,
+            training_round=training_round,
         )
 
         results[name] = {
@@ -423,6 +496,7 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
             f"  Precision@5={metrics['precision_at_5']:.4f}  "
             f"NDCG@5={metrics['ndcg_at_5']:.4f}  "
             f"AUC={metrics['auc_score']:.4f}  "
+            f"Coverage={metrics['coverage']:.4f}  "
             f"Time={train_time}s"
         )
 
@@ -435,17 +509,52 @@ def run_all_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
     if best_model is not None:
         print(f"\n🏆 Best model: {best_name} (Precision@5={best_precision:.4f})")
         _save_best_model(
-            best_model, dataset, mappings, foods, breeds, best_name, results[best_name]
+            best_model, dataset, mappings, foods, breeds, best_name,
+            results[best_name], training_round,
         )
-        _register_best_model(best_name, results)
+        _register_best_model(best_name, results, training_round)
 
-    _save_results(results)
+    _save_results(results, training_round)
     return results
 
 
 # ════════════════════════════════════════════════════════════════════════════
-#  MODEL PERSISTENCE
+#  MODEL PERSISTENCE & GCS UPLOAD
 # ════════════════════════════════════════════════════════════════════════════
+
+
+def _upload_model_to_gcs(local_path: Path, blob_name: str | None = None) -> None:
+    """
+    Upload a model file to Google Cloud Storage.
+
+    Args:
+        local_path: Local path to the model .pkl file.
+        blob_name:  GCS blob name (e.g. 'models/model_v3.pkl').
+                    Defaults to GCS_PREFIX + filename.
+    """
+    if not UPLOAD_TO_GCS:
+        return
+
+    if blob_name is None:
+        blob_name = GCS_PREFIX + local_path.name
+
+    try:
+        from google.cloud import storage
+
+        client = storage.Client()
+        bucket = client.bucket(GCS_BUCKET)
+        blob = bucket.blob(blob_name)
+        blob.upload_from_filename(str(local_path))
+
+        size_kb = local_path.stat().st_size / 1024
+        print(f"  ☁️  Uploaded to gs://{GCS_BUCKET}/{blob_name} ({size_kb:.0f} KB)")
+
+    except ImportError:
+        print("  ⚠ google-cloud-storage not installed — skipping GCS upload")
+        print("    Run: pip install google-cloud-storage")
+    except Exception as e:
+        print(f"  ⚠ GCS upload failed: {e}")
+        print("    Model saved locally but not uploaded to GCS.")
 
 
 def _save_best_model(
@@ -456,10 +565,15 @@ def _save_best_model(
     breeds: list[dict],
     experiment_name: str,
     experiment_results: dict,
+    training_round: int = 1,
 ) -> Path:
     """Serialize the best model + all required artifacts to a single pickle."""
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    model_path = MODEL_DIR / "model.pkl"
+    version = f"v{training_round}"
+    model_path = MODEL_DIR / f"model_{version}.pkl"
+
+    # Also save as model.pkl (latest) for backward compatibility
+    latest_path = MODEL_DIR / "model.pkl"
 
     bundle = {
         "model": model,
@@ -471,37 +585,104 @@ def _save_best_model(
         "metrics": experiment_results["metrics"],
         "params": experiment_results["params"],
         "created_at": datetime.now().isoformat(),
-        "version": "v1",
+        "version": version,
+        "training_round": training_round,
     }
 
     with open(model_path, "wb") as f:
         pickle.dump(bundle, f)
 
+    # Copy as model.pkl so the backend always finds the latest
+    import shutil
+    shutil.copy2(model_path, latest_path)
+
     print(f"  💾 Model saved: {model_path} ({model_path.stat().st_size / 1024:.0f} KB)")
+    print(f"  💾 Also saved as: {latest_path} (latest)")
+
+    # Auto-upload to GCS
+    _upload_model_to_gcs(model_path)  # versioned: models/model_v3.pkl
+    _upload_model_to_gcs(latest_path, blob_name=GCS_PREFIX + "model.pkl")  # latest
+
     return model_path
 
 
-def _register_best_model(best_name: str, results: dict) -> None:
-    """Register the best model in MLflow Model Registry."""
+def _register_best_model(best_name: str, results: dict, training_round: int = 1) -> None:
+    """Register the best model in MLflow Model Registry with description and alias."""
+    MODEL_NAME = "pet-nutrition-recommender"
+
     try:
         run_id = results[best_name]["run_id"]
+        metrics = results[best_name]["metrics"]
+        params = results[best_name]["params"]
         model_uri = f"runs:/{run_id}/model"
+
+        # Build a rich description
+        description = (
+            f"Pet Nutrition Recommendation Model\n"
+            f"===================================\n"
+            f"Training Round: {training_round}\n"
+            f"Best Experiment: {best_name}\n"
+            f"Trained At: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            f"Metrics:\n"
+            f"  Precision@5: {metrics.get('precision_at_5', 'N/A')}\n"
+            f"  NDCG@5:      {metrics.get('ndcg_at_5', 'N/A')}\n"
+            f"  AUC:         {metrics.get('auc_score', 'N/A')}\n"
+            f"  Coverage:    {metrics.get('coverage', 'N/A')}\n\n"
+            f"Parameters:\n"
+            f"  Method:      {params.get('method', 'N/A')}\n"
+            f"  Loss:        {params.get('loss', 'N/A')}\n"
+            f"  Components:  {params.get('num_components', 'N/A')}\n"
+            f"  Epochs:      {params.get('epochs', 'N/A')}\n"
+        )
 
         # Register model
         registered = mlflow.register_model(
             model_uri=model_uri,
-            name="pet-nutrition-recommender",
+            name=MODEL_NAME,
         )
         print(f"  📋 Registered model: {registered.name} v{registered.version}")
 
-        # Transition to Production
         client = mlflow.tracking.MlflowClient()
-        client.transition_model_version_stage(
-            name="pet-nutrition-recommender",
+
+        # Update version description
+        client.update_model_version(
+            name=MODEL_NAME,
             version=registered.version,
-            stage="Production",
+            description=description,
         )
-        print(f"  🚀 Promoted to Production stage")
+        print(f"  📝 Added description to model v{registered.version}")
+
+        # Set alias "champion" to clearly mark the production model (MLflow 2.x+)
+        try:
+            client.set_registered_model_alias(
+                name=MODEL_NAME,
+                alias="champion",
+                version=registered.version,
+            )
+            print(f"  🏷️  Set alias 'champion' → v{registered.version}")
+        except AttributeError:
+            # Fallback for older MLflow: use stage-based promotion
+            client.transition_model_version_stage(
+                name=MODEL_NAME,
+                version=registered.version,
+                stage="Production",
+            )
+            print(f"  🚀 Promoted to Production stage (MLflow < 2.x fallback)")
+
+        # Also update the registered model's top-level description
+        try:
+            client.update_registered_model(
+                name=MODEL_NAME,
+                description=(
+                    f"AI-powered pet food recommendation model. "
+                    f"Current champion: v{registered.version} "
+                    f"(round {training_round}, {best_name})"
+                ),
+            )
+        except Exception:
+            pass  # Non-critical
+
+        print(f"  ✅ Model registration complete")
 
     except Exception as e:
         print(f"  ⚠ Model registration skipped: {e}")
@@ -510,26 +691,36 @@ def _register_best_model(best_name: str, results: dict) -> None:
         )
 
 
-def _save_results(results: dict) -> None:
+def _save_results(results: dict, training_round: int = 1) -> None:
     """Save experiment comparison as JSON for the report."""
-    output_path = (
-        Path(__file__).resolve().parent.parent / "reports" / "experiment_results.json"
-    )
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    reports_dir = Path(__file__).resolve().parent.parent / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
 
     # Convert to serializable format
-    serializable = {}
+    serializable = {
+        "training_round": training_round,
+        "trained_at": datetime.now().isoformat(),
+        "experiments": {},
+    }
     for name, data in results.items():
-        serializable[name] = {
+        serializable["experiments"][name] = {
             "params": data["params"],
             "metrics": {k: round(v, 4) for k, v in data["metrics"].items()},
             "run_id": data["run_id"],
         }
 
-    with open(output_path, "w") as f:
+    # Save as latest
+    latest_path = reports_dir / "experiment_results.json"
+    with open(latest_path, "w") as f:
         json.dump(serializable, f, indent=2)
 
-    print(f"\n📊 Results saved: {output_path}")
+    # Also save a versioned copy
+    versioned_path = reports_dir / f"experiment_results_round{training_round}.json"
+    with open(versioned_path, "w") as f:
+        json.dump(serializable, f, indent=2)
+
+    print(f"\n📊 Results saved: {latest_path}")
+    print(f"📊 Versioned copy: {versioned_path}")
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -576,9 +767,13 @@ def train_final_model(
         learning_rate=best_params.get("learning_rate", 0.05),
     )
 
+    # Detect training round
+    training_round = _get_next_training_round()
+
     # Save as final model
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    final_path = MODEL_DIR / "model_v1_final.pkl"
+    version = f"v{training_round}_final"
+    final_path = MODEL_DIR / f"model_{version}.pkl"
 
     bundle = {
         "model": model,
@@ -589,22 +784,40 @@ def train_final_model(
         "experiment_name": "final_full_dataset",
         "params": best_params,
         "created_at": datetime.now().isoformat(),
-        "version": "v1_final",
+        "version": version,
+        "training_round": training_round,
     }
 
     with open(final_path, "wb") as f:
         pickle.dump(bundle, f)
 
+    # Also copy as model.pkl (latest)
+    import shutil
+    latest_path = MODEL_DIR / "model.pkl"
+    shutil.copy2(final_path, latest_path)
+
     # Log to MLflow
-    with mlflow.start_run(run_name="final_v1_full_dataset"):
-        mlflow.log_params(best_params)
+    run_name = f"round{training_round}_final_full_dataset"
+    # Update training_round in params to the current round (avoids conflict with old value)
+    final_params = {k: v for k, v in best_params.items() if k != "training_round"}
+    final_params["training_round"] = training_round
+    with mlflow.start_run(run_name=run_name):
+        mlflow.log_params(final_params)
         mlflow.log_param("dataset", "full")
         mlflow.log_param("total_interactions", full_matrix.nnz)
+        mlflow.set_tag("training_round", str(training_round))
+        mlflow.set_tag("trained_at", datetime.now().isoformat())
         mlflow.log_artifact(str(final_path))
 
     print(
         f"  💾 Final model saved: {final_path} ({final_path.stat().st_size / 1024:.0f} KB)"
     )
+    print(f"  💾 Also saved as: {latest_path} (latest)")
+
+    # Auto-upload to GCS
+    _upload_model_to_gcs(final_path)  # versioned: models/model_v3_final.pkl
+    _upload_model_to_gcs(latest_path, blob_name=GCS_PREFIX + "model.pkl")  # latest
+
     return final_path
 
 

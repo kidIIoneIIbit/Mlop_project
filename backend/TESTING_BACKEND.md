@@ -54,7 +54,6 @@ sg docker -c 'docker compose run --rm backend pytest tests/test_model_service.py
 sg docker -c 'docker compose run --rm backend pytest tests/test_compare.py -v'
 sg docker -c 'docker compose run --rm backend pytest tests/test_nutrition.py -v'
 sg docker -c 'docker compose run --rm backend pytest tests/test_match_logic.py -v'
-Run with Coverage
 ```
 
 ---

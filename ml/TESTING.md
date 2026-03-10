@@ -80,7 +80,7 @@ python -c "import mlflow, faker, pandas, scipy, sklearn, matplotlib, numpy; prin
 ### Run
 
 ```bash
-cd d:\mlops_2_2025\final_project
+# From the repo root (PetNutrition-Recommendation/)
 python ml/mock_generator.py
 ```
 
@@ -586,7 +586,7 @@ Top 3 for Labrador:
 Run the entire ML pipeline end-to-end:
 
 ```bash
-cd d:\mlops_2_2025\final_project
+# From the repo root (PetNutrition-Recommendation/)
 
 # Step 1: Generate mock data
 python ml/mock_generator.py

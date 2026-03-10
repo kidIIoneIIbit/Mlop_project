@@ -47,8 +47,8 @@ docker ps   # should return an empty table, not a permission error
 ## 3. Clone the Repo
 
 ```bash
-git clone https://github.com/kidIIoneIIbit/Mlop_project.git
-cd Mlop_project
+git clone https://github.com/kidIIoneIIbit/PetNutrition-Recommendation.git
+cd PetNutrition-Recommendation
 ```
 
 ---
@@ -118,7 +118,7 @@ sudo apt-get install -y docker.io docker-compose-plugin
 The `backend/` directory is not mounted. Make sure you run `docker compose up` from `ml/` (not from the repo root), so relative paths in `docker-compose.yml` resolve correctly.
 
 ```bash
-cd /path/to/Mlop_project/ml
+cd /path/to/PetNutrition-Recommendation/ml
 docker compose up --build
 ```
 
