@@ -99,4 +99,9 @@ export function postCompare(payload: {
   return api.post<CompareResponse>("/compare/", payload);
 }
 
+export function fetchFoods(species?: string) {
+  const params = species ? `?species=${species}` : '';
+  return api.get<{ foods: FoodDetail[] }>(`/foods/${params}`);
+}
+
 export default api;

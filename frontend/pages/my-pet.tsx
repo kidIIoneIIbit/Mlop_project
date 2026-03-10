@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect, FormEvent } from 'react';
 import Layout from '@/components/Layout';
-import { fetchBreeds, Breed } from '@/lib/api';
+import { fetchBreeds, postRecommendations, Breed } from '@/lib/api';
 
 const CONDITIONS_LIST = ['Kidney Disease', 'Obesity / Overweight', 'Food Allergies', 'Sensitive Stomach', 'Joint Care'];
 const GOALS_LIST = ['General Wellness', 'Weight Loss', 'Active Lifestyle', 'Senior Care', 'Coat & Skin'];
@@ -30,6 +30,8 @@ export default function MyPetProfile() {
   const [breeds, setBreeds] = useState<Breed[]>([]);
   const [loadingBreeds, setLoadingBreeds] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const saved = localStorage.getItem('petProfile');
@@ -102,6 +104,33 @@ export default function MyPetProfile() {
     localStorage.removeItem('clickLog');
     setProfile(null);
     setIsEditing(false);
+  };
+
+  const handleGetRecommendation = async () => {
+    if (!profile) return;
+    setSubmitting(true);
+    setError('');
+    const petPayload = {
+      name: profile.name,
+      species: profile.species,
+      breed_id: profile.breed_id,
+      age_years: Number(profile.age_years ?? profile.age),
+      weight_kg: Number(profile.weight_kg ?? profile.weight),
+      activity_level: profile.activity_level || 'medium',
+      health_conditions: profile.health_conditions || [],
+      goals: profile.goals || [],
+      top_k: 6,
+    };
+    try {
+      const res = await postRecommendations(petPayload);
+      localStorage.setItem('petProfile', JSON.stringify({ ...petPayload, breed: profile.breed ?? profile.breed_id }));
+      localStorage.setItem('apiRecommendations', JSON.stringify(res.data));
+      router.push('/results/1');
+    } catch (err: any) {
+      setError(err?.response?.data?.detail ?? 'Failed to get recommendations. Is the backend running?');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!mounted) return null;
@@ -272,13 +301,19 @@ export default function MyPetProfile() {
                 <button onClick={() => setIsEditing(true)} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '14px 24px' }}>
                   ✏️ Edit Profile
                 </button>
-                <Link href="/profile" className="btn btn-teal" style={{ flex: 1, justifyContent: 'center', padding: '14px 24px' }}>
-                  🔄 New Recommendation
-                </Link>
+                <button onClick={handleGetRecommendation} disabled={submitting} className="btn btn-teal" style={{ flex: 1, justifyContent: 'center', padding: '14px 24px', opacity: submitting ? 0.7 : 1 }}>
+                  {submitting ? '⏳ Loading...' : '✨ Get Recommendation'}
+                </button>
                 <button onClick={handleDelete} className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center', padding: '14px 24px', color: 'var(--pink)', borderColor: 'rgba(217, 107, 107, 0.3)' }}>
                   🗑️ Delete Profile
                 </button>
               </div>
+
+              {error && (
+                <div className="fade-in" style={{ background: 'rgba(255,0,0,0.1)', color: '#e74c3c', padding: '12px 16px', borderRadius: '8px', marginTop: '16px', fontSize: '14px' }}>
+                  ⚠️ {error}
+                </div>
+              )}
             </>
           )}
 
